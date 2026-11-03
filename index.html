@@ -2127,6 +2127,7 @@ html .nav-item,html .shell.home .chat-item{border-radius:14px}
 ::selection{background:var(--hx-accent-soft)}
 :focus-visible{outline:2px solid var(--hx-accent);outline-offset:2px}
 
+html.has-photo[data-theme="light"] .welcome .hx-title .l2{background-image:linear-gradient(95deg,#055a40,#2c7a10 52%,#9c5600);filter:drop-shadow(0 1px 10px rgba(255,255,255,.6))!important}
 @media (prefers-reduced-motion:reduce){
   .sky:not(.has-photo)::before,.hx-title .l2,.hx-dot::after,html .shell.home .composer::before{animation:none!important}
   .hx-chip,.hx-card,.hx-title .l1,.hx-title .l2,.msg{animation:none!important}
@@ -5465,14 +5466,42 @@ function updateSky(){
 }
 
 /* ================= real photos (Unsplash, free licence) =================
-   One real mountain photo per time of day, loaded from Unsplash's image CDN at a size that fits the screen.
-   The drawn sky above stays underneath as a fallback when photos can't load (offline, strict previews). */
-const SKY_PHOTOS = {
-  pagi:  { id: "1500964757637-c85e8a162699", by: "simon", page: "https://unsplash.com/photos/landscape-photography-of-mountains-twukN12EN7c", pos: "50% 60%" },
-  siang: { id: "1538947151057-dfe933d688d1", by: "Antoine Rault", page: "https://unsplash.com/photos/blue-mountains-at-daytime-IhWRrZx4-kk", pos: "50% 70%" },
-  sore:  { id: "1494548162494-384bba4ab999", by: "Jordan Wozniak", page: "https://unsplash.com/photos/sunset-over-the-horizon-xP_AGmeEa6s", pos: "50% 70%" },
-  malam: { id: "1522124624696-7ea32eb9592c", by: "brandon siu", page: "https://unsplash.com/photos/icy-mountains-under-starry-night-nI7knd5sQfo", pos: "50% 75%" }
-};
+   Indonesian landscapes only. One photo per day: the list is shuffled with a seed that changes every
+   full cycle, so every photo shows once before any repeats and the order differs from cycle to cycle.
+   The animated mesh underneath stays as the fallback when photos can't load (offline, strict previews). */
+const ID_PHOTOS = [
+  { id: "1749731630653-d9b3f00573ed", by: "Sébastien Lavalaye", page: "https://unsplash.com/photos/RuA4YqFQOc4", pos: "50% 55%" },   // Bromo
+  { id: "1588668214407-6ea9a6d8c272", by: "Kevin Zhang", page: "https://unsplash.com/photos/dzFB8xeWg1M", pos: "50% 60%" },               // Bromo
+  { id: "1597553716923-45474a48fbe4", by: "Nanda Firdaus", page: "https://unsplash.com/photos/mjr_5_ntTf8", pos: "50% 60%" },            // Bromo
+  { id: "1650509009946-32b00cb21a0a", by: "Ernests Vaga", page: "https://unsplash.com/photos/4tMHO3NbUEc", pos: "50% 55%" },             // Raja Ampat
+  { id: "1650509011253-fc478d121cb1", by: "Ernests Vaga", page: "https://unsplash.com/photos/8zAyMNuVbpk", pos: "50% 50%" },             // Kri, Raja Ampat
+  { id: "1702664045144-8c97b3034d26", by: "Simon Spring", page: "https://unsplash.com/photos/Szabb9A5U4o", pos: "50% 55%" },             // Raja Ampat
+  { id: "1745917784557-a93bf209232c", by: "Erick Morales Oyola", page: "https://unsplash.com/photos/odfWue8fwuE", pos: "50% 55%" },      // Piaynemo
+  { id: "1555400038-63f5ba517a47", by: "Niklas Weiss", page: "https://unsplash.com/photos/-2WlTWZLnRc", pos: "50% 55%" },                // Tegallalang, Bali
+  { id: "1746106424334-a0f652d81cde", by: "Matthew Stephenson", page: "https://unsplash.com/photos/FlQeHeTPClU", pos: "50% 55%" },       // Tegallalang, Bali
+  { id: "1571366343168-631c5bcca7a4", by: "Rizknas", page: "https://unsplash.com/s/photos/komodo-island", pos: "50% 60%" },               // Padar, Komodo
+  { id: "1571880826835-7ab2b833ad07", by: "Rizknas", page: "https://unsplash.com/s/photos/komodo-island", pos: "50% 55%" },               // Padar, Komodo
+  { id: "1604560929658-bbc3c2ba6a36", by: "Fajruddin Mudzakkir", page: "https://unsplash.com/s/photos/komodo-island", pos: "50% 55%" },  // Padar, Komodo
+  { id: "1601058497548-f247dfe349d6", by: "Irfannur Diah", page: "https://unsplash.com/s/photos/lake-toba", pos: "50% 55%" },            // Danau Toba
+  { id: "1623598122059-9b5ef17619c8", by: "Marcel R", page: "https://unsplash.com/s/photos/lake-toba", pos: "50% 60%" },                 // Danau Toba
+  { id: "1780748528710-75dfc3e9c91f", by: "Rowan Heuvel", page: "https://unsplash.com/s/photos/borobudur", pos: "50% 60%" }              // Borobudur
+];
+function dailyPhoto(){
+  const n = ID_PHOTOS.length, d = new Date();
+  const day = Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+  const shuffled = cycle => {
+    let seed = ((cycle * 2654435761) + 12345) >>> 0;
+    const rnd = () => { seed = (seed + 0x6D2B79F5) >>> 0; let t = seed; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+    const o = ID_PHOTOS.map((_, i) => i);
+    for (let i = n - 1; i > 0; i--){ const j = Math.floor(rnd() * (i + 1)); [o[i], o[j]] = [o[j], o[i]]; }
+    return o;
+  };
+  const cycle = Math.floor(day / n), order = shuffled(cycle);
+  if (cycle > 0 && order[0] === shuffled(cycle - 1)[n - 1]) [order[0], order[1]] = [order[1], order[0]];   // never the same photo two days in a row
+  return ID_PHOTOS[order[day % n]];
+}
+const TODAY_PHOTO = dailyPhoto();
+const SKY_PHOTOS = { pagi: TODAY_PHOTO, siang: TODAY_PHOTO, sore: TODAY_PHOTO, malam: TODAY_PHOTO };
 function photoUrl(ph){
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const w = Math.min(2400, Math.ceil(Math.max(innerWidth, innerHeight * 1.5) * dpr / 200) * 200);
@@ -5481,10 +5510,11 @@ function photoUrl(ph){
 let photoShown = null, photoSeq = 0;
 const photoCache = {};
 function loadPhoto(ph){
-  if (!photoCache[ph]) photoCache[ph] = new Promise((res, rej) => {
+  const key = SKY_PHOTOS[ph].id;
+  if (!photoCache[key]) photoCache[key] = new Promise((res, rej) => {
     const i = new Image(); i.decoding = "async"; i.alt = ""; i.onload = () => (i.decode ? i.decode().catch(() => {}) : Promise.resolve()).then(() => res(i)); i.onerror = rej; i.src = photoUrl(ph);
-  }).catch(e => { delete photoCache[ph]; throw e; });
-  return photoCache[ph];
+  }).catch(e => { delete photoCache[key]; throw e; });
+  return photoCache[key];
 }
 /* ---------- own wallpaper: resized on the device and kept in IndexedDB (never uploaded) ---------- */
 let wallpaper = null;   // { data, lum }
@@ -5570,8 +5600,7 @@ function showPhoto(ph){
   const sky = $("#sky"); if (!sky) return;
   if (cfg.wallpaper && wallpaper) return showWallpaper(sky);
   if (photoShown === "wp"){ photoShown = null; document.documentElement.classList.remove("wp", "wp-dark", "wp-light"); }
-  if (!cfg.wallpaper){ photoShown = null; return; }   // Wayyuh Pulse: the living mesh background replaces the stock photos; only the user's own wallpaper shows
-  if (photoShown === ph || !navigator.onLine) return;
+  if ((photoShown && photoShown !== "wp" && SKY_PHOTOS[photoShown] === SKY_PHOTOS[ph]) || !navigator.onLine) return;   // same daily photo for every time of day
   photoShown = ph; const seq = ++photoSeq;
   loadPhoto(ph).then(img => {
     if (seq !== photoSeq) return;
