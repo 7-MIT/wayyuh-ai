@@ -1,0 +1,4 @@
+# generated media: the trailer video is not stored in git
+trailer/*.mp4
+trailer/*.wav
+trailer/frames/

@@ -23,7 +23,7 @@ Latar beranda memakai foto pemandangan dan landmark Indonesia dari Unsplash (Bro
 
 ## Trailer
 
-`trailer/wayyuh-ai-trailer.mp4` (48 detik, 1080p, 24 fps, stereo) adalah trailer peluncuran Wayyuh AI: AI yang digabung dengan E.B.I.S.I dan intelligence.7mit. Semuanya dibuat dari kode:
+Trailer peluncuran Wayyuh AI (48 detik, 1080p, 24 fps, stereo): AI yang digabung dengan E.B.I.S.I dan intelligence.7mit. Videonya (`wayyuh-ai-trailer.mp4`) sengaja tidak disimpan di git; yang disimpan hanya sumbernya, dan semuanya dibuat dari kode:
 
 - `trailer/trailer.html` adalah linimasa kanvas yang deterministik (`window.draw(t)`).
 - `trailer/render.js` merender frame demi frame dengan Playwright (jalankan `python3 -m http.server 8099` di akar repo dulu).
