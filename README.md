@@ -29,3 +29,18 @@ Trailer peluncuran Wayyuh AI (48 detik, 1080p, 24 fps, stereo): AI yang digabung
 - `trailer/render.js` merender frame demi frame dengan Playwright (jalankan `python3 -m http.server 8099` di akar repo dulu).
 - `trailer/audio.py` mensintesis musiknya dengan numpy saja (detak jantung, riser, dentuman, beat penuh yang pas dengan potongan gambar).
 - Gabungkan: `ffmpeg -framerate 24 -i frames/f%05d.jpg -i score.wav -c:v libx264 -crf 24 -pix_fmt yuv420p -c:a aac wayyuh-ai-trailer.mp4`.
+
+## Akun dan sinkronisasi
+
+Akun bersifat opsional (Pengaturan, tab Akun). Satu akun menyimpan chat, memori, proyek, catatan, tugas, pengaturan, avatar, dan aktivitas di United Wayyuh Server (Supabase), dan data itu ikut ke perangkat mana pun saat masuk.
+
+- Basis data: tabel `public.wayyuh_sync` (satu baris per `user_id` + `key`; kunci `cfg`, `avatar`, `act`, `projects`, `memories`, `notes`, `tasks`, `memAuto`, dan `chat:<id>`). Row level security membatasi tiap akun hanya ke barisnya sendiri; `anon` tidak punya akses.
+- Autentikasi: email dan kata sandi lewat Supabase Auth. Kunci publik (`ACC_KEY`) memang aman ada di browser.
+- Sinkronisasi memakai hash per baris: hanya baris yang berubah dikirim, penghapusan ikut menyebar, dan keluar dari akun membersihkan data di perangkat setelah tersimpan.
+- Wallpaper buatan sendiri, lokasi cuaca, dan status tampilan perangkat tidak ikut disinkronkan.
+
+Pengaturan yang perlu ada di dashboard Supabase supaya pendaftaran dan tautan email berfungsi: **Authentication → URL Configuration** (Site URL dan Redirect URLs berisi alamat produksi, mis. `https://ai.wayyuh.org`) dan **SMTP kustom** agar email konfirmasi terkirim ke alamat siapa pun.
+
+## Halaman hukum
+
+`/terms/` (Ketentuan Layanan) dan `/privacy/` (Kebijakan Privasi) adalah halaman statis di `terms/index.html` dan `privacy/index.html`. Kontak keluhan: halo@7mit.org.

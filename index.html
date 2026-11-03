@@ -501,6 +501,13 @@ kbd{font:500 11px var(--mono);color:var(--faint);border:1px solid var(--line-2);
 .mem-add{display:flex;gap:8px}
 .mem-add input{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);border-radius:10px;padding:9px 12px;outline:none}
 .mem-add input:focus{border-color:var(--accent)}
+.acc-form{display:flex;flex-direction:column;gap:12px}
+#accSeg{margin:14px 0 6px}
+.acc-terms a{color:var(--accent)}
+#accMsg.err,#accPwMsg.err{color:var(--danger)}
+.btn.confirm{border-color:var(--danger);color:var(--danger)}
+.pf-acc{width:100%;justify-content:center}
+.hx-legal a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 .imp-step{display:flex;gap:12px;align-items:flex-start}
 .imp-n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 13px var(--mono);border:1px solid var(--line-2);color:var(--muted)}
 .imp-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
@@ -2246,7 +2253,7 @@ const cap1 = w => w.charAt(0).toUpperCase() + w.slice(1);
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 const store = {
   get(k, d){ try{ const v = localStorage.getItem("wayyuh." + k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem("wayyuh." + k, JSON.stringify(v)); return true; }catch(e){ return false; } }
+  set(k, v){ try{ localStorage.setItem("wayyuh." + k, JSON.stringify(v)); try{ accOnWrite(k); }catch(e){} return true; }catch(e){ return false; } }
 };
 // one-time carry-over from the old "sunday." keys (app was renamed to Wayyuh AI)
 try{
@@ -2450,7 +2457,7 @@ const I18N = {
     save: "Simpan", saved: "Pengaturan disimpan", close: "Tutup",
     memTitle: "Memori", memSub: "Hal yang Wayyuh AI ingat tentangmu. Ikut terkirim di setiap percakapan.", memAdd: "Tambah, misal: aku suka kopi tanpa gula",
     memEmpty: "Belum ada memori. Tambahkan di bawah, ketik /ingat …, atau bilang \"ingat ya, aku …\" di chat.",
-    memImport: "Import dari AI lain", memImpTitle: "Import memori ke Wayyuh AI", memImpSub: "Pindahkan hal yang sudah diingat AI lain tentangmu. Hasilnya masuk ke daftar memori di perangkat ini.", memImpStep1: "Salin prompt ini ke chat dengan penyedia AI-mu yang lain", memImpLang: "Bahasa prompt", memImpStep2: "Tempel hasilnya di bawah untuk menambahkannya ke memori Wayyuh AI", memImpPaste: "Tempel detail memorimu di sini", memImpFound: "{n} entri terdeteksi", memImpNone: "Belum ada entri yang bisa dibaca. Pakai format [YYYY-MM-DD] - isi entri.", memImpAdd: "Tambah ke memori", memImpBack: "Kembali", memImpDone: "{n} memori ditambahkan, {d} dilewati (sudah ada)", memClear: "Hapus semua", memAuto: "otomatis", memExists: "Sudah ada di memori", forget: "Lupakan",
+    secAccount: "Akun", accTitle: "Satu akun untuk semua datamu", accIntro: "Masuk untuk menyimpan chat, memori, proyek, catatan, tugas, dan pengaturanmu di United Wayyuh Server, lalu lanjutkan dari perangkat mana pun.", accSignIn: "Masuk", accSignUp: "Daftar", accEmail: "Email", accPass: "Kata sandi", accPassH: "Minimal 8 karakter.", accForgot: "Lupa kata sandi?", accTerms: "Dengan masuk atau mendaftar, kamu menyetujui", accTermsL: "Ketentuan Layanan", accPrivL: "Kebijakan Privasi", accAnd: "dan", accWorking: "Memproses…", accNeedEmail: "Isi alamat email yang valid dulu.", accErrCreds: "Email atau kata sandi salah.", accErrConfirm: "Email belum dikonfirmasi. Cek kotak masukmu.", accErrWeak: "Kata sandi terlalu lemah. Pakai minimal 8 karakter.", accErrRate: "Terlalu banyak percobaan. Tunggu sebentar lalu coba lagi.", accErrNet: "Tidak bisa terhubung ke server akun. Periksa internetmu.", accErrMail: "Alamat email ini belum bisa dipakai untuk mendaftar. Coba alamat lain atau hubungi halo@7mit.org.", accErrOther: "Gagal: {msg}", accErrOtherAcct: "Perangkat ini masih berisi data akun lain ({email}). Masuk ke akun itu dulu, lalu pilih Keluar agar data perangkat dibersihkan.", accConfirmSent: "Cek emailmu: tautan konfirmasi dikirim ke {email}. Setelah dikonfirmasi, kamu masuk otomatis.", accRecoverSent: "Jika email itu terdaftar, tautan untuk mengatur ulang kata sandi sudah dikirim.", accWelcome: "Berhasil masuk. Menyinkronkan data…", accSynced: "Data akun diperbarui", accUpToDate: "Sudah yang terbaru", accSyncing: "Menyinkronkan…", accSyncErr: "Gagal sinkron: {msg}", accSyncOk: "Tersinkron {when}", accSyncIdle: "Siap disinkronkan", accSkipped: "{n} chat terlalu besar dan dilewati", accJustNow: "baru saja", accAgo: "{n} menit lalu", accSyncNow: "Sinkronkan sekarang", accSignOut: "Keluar", accSignOutConfirm: "Ketuk lagi: data perangkat dihapus setelah tersimpan", accSignOutFail: "Belum bisa menyimpan ke akun, jadi data perangkat tidak dihapus. Coba lagi saat online.", accNewPass: "Kata sandi baru", accChangePass: "Ubah kata sandi", accPassChanged: "Kata sandi diubah.", accRecovery: "Atur kata sandi baru untuk akunmu di bawah ini.", accCloudData: "Data cloud", accCloudNote: "Menghapus data cloud tidak menghapus data di perangkat ini.", accWipe: "Hapus data cloud", accWipeConfirm: "Ketuk lagi untuk menghapus semua data cloud", accWiped: "Data cloud dihapus.", accDeleteNote: "Untuk menghapus akun sepenuhnya, kirim email dari alamat akunmu ke halo@7mit.org.", accGoSignIn: "Masuk atau daftar", navTerms: "Ketentuan", navPrivacy: "Privasi", dataNoteAcc: "Chat, memori, dan pengaturanmu disimpan di akunmu (United Wayyuh Server) dan di perangkat ini. Pesan yang kamu kirim dikirim ke server AI untuk dijawab.", memImport: "Import dari AI lain", memImpTitle: "Import memori ke Wayyuh AI", memImpSub: "Pindahkan hal yang sudah diingat AI lain tentangmu. Hasilnya masuk ke daftar memori di perangkat ini.", memImpStep1: "Salin prompt ini ke chat dengan penyedia AI-mu yang lain", memImpLang: "Bahasa prompt", memImpStep2: "Tempel hasilnya di bawah untuk menambahkannya ke memori Wayyuh AI", memImpPaste: "Tempel detail memorimu di sini", memImpFound: "{n} entri terdeteksi", memImpNone: "Belum ada entri yang bisa dibaca. Pakai format [YYYY-MM-DD] - isi entri.", memImpAdd: "Tambah ke memori", memImpBack: "Kembali", memImpDone: "{n} memori ditambahkan, {d} dilewati (sudah ada)", memClear: "Hapus semua", memAuto: "otomatis", memExists: "Sudah ada di memori", forget: "Lupakan",
     installed: "Wayyuh AI sudah terpasang", greetMorning: "Selamat pagi", greetNoon: "Selamat siang", greetAfternoon: "Selamat sore", greetNight: "Selamat malam",
     untitled: "Percakapan baru", renamed: "Nama diganti", moved: "Dipindahkan ke {p}",
     paletteTitle: "Alat Wayyuh AI"
@@ -2549,7 +2556,7 @@ const I18N = {
     save: "Save", saved: "Settings saved", close: "Close",
     memTitle: "Memory", memSub: "Things Wayyuh AI remembers about you. Sent with every conversation.", memAdd: "Add, e.g.: I like my coffee without sugar",
     memEmpty: "No memories yet. Add one below, type /ingat …, or say \"remember that I …\" in chat.",
-    memImport: "Import from another AI", memImpTitle: "Import memory to Wayyuh AI", memImpSub: "Bring over what another AI already remembers about you. Entries join the memory list on this device.", memImpStep1: "Copy this prompt into a chat with your other AI provider", memImpLang: "Prompt language", memImpStep2: "Paste the results below to add them to Wayyuh AI's memory", memImpPaste: "Paste your memory details here", memImpFound: "{n} entries found", memImpNone: "No readable entries yet. Use the format [YYYY-MM-DD] - entry.", memImpAdd: "Add to memory", memImpBack: "Back", memImpDone: "{n} memories added, {d} skipped (already there)", memClear: "Delete all", memAuto: "auto", memExists: "Already in memory", forget: "Forget",
+    secAccount: "Account", accTitle: "One account for all your data", accIntro: "Sign in to keep your chats, memory, projects, notes, tasks and settings on United Wayyuh Server and pick up on any device.", accSignIn: "Sign in", accSignUp: "Create account", accEmail: "Email", accPass: "Password", accPassH: "At least 8 characters.", accForgot: "Forgot password?", accTerms: "By signing in or creating an account, you agree to the", accTermsL: "Terms of Service", accPrivL: "Privacy Policy", accAnd: "and", accWorking: "Working…", accNeedEmail: "Enter a valid email address first.", accErrCreds: "Wrong email or password.", accErrConfirm: "Email not confirmed yet. Check your inbox.", accErrWeak: "That password is too weak. Use at least 8 characters.", accErrRate: "Too many attempts. Wait a moment and try again.", accErrNet: "Can't reach the account server. Check your internet.", accErrMail: "This email address can't be used to sign up yet. Try another address or contact halo@7mit.org.", accErrOther: "Failed: {msg}", accErrOtherAcct: "This device still holds another account's data ({email}). Sign in to that account first, then choose Sign out to clear the device.", accConfirmSent: "Check your email: a confirmation link was sent to {email}. Once confirmed, you're signed in automatically.", accRecoverSent: "If that email is registered, a password reset link has been sent.", accWelcome: "Signed in. Syncing your data…", accSynced: "Account data updated", accUpToDate: "Already up to date", accSyncing: "Syncing…", accSyncErr: "Sync failed: {msg}", accSyncOk: "Synced {when}", accSyncIdle: "Ready to sync", accSkipped: "{n} chats were too large and skipped", accJustNow: "just now", accAgo: "{n} min ago", accSyncNow: "Sync now", accSignOut: "Sign out", accSignOutConfirm: "Tap again: device data is cleared once saved", accSignOutFail: "Couldn't save to your account yet, so device data was kept. Try again when online.", accNewPass: "New password", accChangePass: "Change password", accPassChanged: "Password changed.", accRecovery: "Set a new password for your account below.", accCloudData: "Cloud data", accCloudNote: "Deleting cloud data doesn't delete the data on this device.", accWipe: "Delete cloud data", accWipeConfirm: "Tap again to delete all cloud data", accWiped: "Cloud data deleted.", accDeleteNote: "To delete your account entirely, email halo@7mit.org from your account's address.", accGoSignIn: "Sign in or create account", navTerms: "Terms", navPrivacy: "Privacy", dataNoteAcc: "Your chats, memory and settings are stored in your account (United Wayyuh Server) and on this device. The messages you send go to the AI server to be answered.", memImport: "Import from another AI", memImpTitle: "Import memory to Wayyuh AI", memImpSub: "Bring over what another AI already remembers about you. Entries join the memory list on this device.", memImpStep1: "Copy this prompt into a chat with your other AI provider", memImpLang: "Prompt language", memImpStep2: "Paste the results below to add them to Wayyuh AI's memory", memImpPaste: "Paste your memory details here", memImpFound: "{n} entries found", memImpNone: "No readable entries yet. Use the format [YYYY-MM-DD] - entry.", memImpAdd: "Add to memory", memImpBack: "Back", memImpDone: "{n} memories added, {d} skipped (already there)", memClear: "Delete all", memAuto: "auto", memExists: "Already in memory", forget: "Forget",
     installed: "Wayyuh AI is installed", greetMorning: "Good morning", greetNoon: "Good afternoon", greetAfternoon: "Good afternoon", greetNight: "Good evening",
     untitled: "New conversation", renamed: "Renamed", moved: "Moved to {p}",
     paletteTitle: "Wayyuh AI tools"
@@ -2593,7 +2600,7 @@ function saveChats(){
   for (const c of Object.values(chats)) if (c.messages.length > LIMITS.msgsPerChat) c.messages = c.messages.slice(-LIMITS.msgsPerChat);
   const clean = JSON.stringify(chats, (k, v) => k.startsWith("_") ? undefined : v);
   for (let tries = 0; tries < 40; tries++){
-    try{ localStorage.setItem("wayyuh.chats", tries ? JSON.stringify(chats, (k, v) => k.startsWith("_") ? undefined : v) : clean); return true; }
+    try{ localStorage.setItem("wayyuh.chats", tries ? JSON.stringify(chats, (k, v) => k.startsWith("_") ? undefined : v) : clean); try{ accOnWrite("chats"); }catch(e){} return true; }
     catch(e){
       const quota = e && (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22);
       if (!quota) return false;
@@ -2722,6 +2729,378 @@ function setTheme(v, origin){ if (!THEMES.includes(v)) return; cfg.theme = v; sa
 function setSeason(v, origin){ if (!["auto", "off", ...SEASON_KEYS].includes(v)) return; cfg.season = v; saveCfg(); applyTheme(origin || false); }
 function toggleTheme(origin){ setTheme(isDark() ? "light" : "dark", origin); }
 const themeLabel = v => t({ auto: "themeAuto", system: "themeSystem", light: "themeLight", dark: "themeDark" }[v] || "themeAuto");
+
+/* ================= account: one login keeps everything (United Wayyuh Server) =================
+   Email + password through the project's Auth API; data goes to public.wayyuh_sync (row level security: each
+   account reads and writes only its own rows). Rows: cfg, avatar, act, projects, memories, notes, tasks, memAuto and one row per chat.
+   Local copy stays the working copy; a row is pushed when its hash changes and pulled when the server's hash changed. */
+const ACC_URL = "https://rbrcqrrayipueukspeij.supabase.co";
+const ACC_KEY = "sb_publishable_GQe01EuXE5V16a4XS8lcZA_cHr1rXQT";   // publishable key: safe in the browser, grants nothing without a login
+const SYNC_KEYS = ["cfg", "avatar", "act", "projects", "memories", "notes", "tasks", "memAuto"];
+let accSess = store.get("account", null);
+if (accSess && !(accSess.access_token && accSess.user && accSess.user.id)) accSess = null;
+const accState = { status: "idle", at: 0, msg: "", timer: 0, pulling: false, pushing: false, lastPull: 0, recovery: false };
+const rawSet = (k, v) => { try{ localStorage.setItem("wayyuh." + k, JSON.stringify(v)); }catch(e){} };
+const accOn = () => !!accSess;
+function accOnWrite(k){ if (accSess && (k === "chats" || SYNC_KEYS.includes(k))) syncSchedule(); }
+
+async function accReq(path, o = {}){
+  let res;
+  try{ res = await fetch(ACC_URL + path, { method: o.method || "GET", headers: { apikey: ACC_KEY, Authorization: "Bearer " + (o.token || ACC_KEY), "Content-Type": "application/json", ...(o.headers || {}) }, body: o.body == null ? undefined : JSON.stringify(o.body) }); }
+  catch(e){ const err = new Error("net"); err.net = true; throw err; }
+  const txt = await res.text(); let data = null;
+  try{ data = txt ? JSON.parse(txt) : null; }catch(e){ data = { message: txt }; }
+  if (!res.ok){
+    const err = new Error((data && (data.msg || data.error_description || data.message || data.error)) || ("HTTP " + res.status));
+    err.status = res.status; err.code = data && (data.error_code || data.code); throw err;
+  }
+  return data;
+}
+function accSetSession(d){
+  accSess = { access_token: d.access_token, refresh_token: d.refresh_token, expires_at: d.expires_at || Math.floor(Date.now() / 1000) + (d.expires_in || 3600), user: { id: d.user.id, email: d.user.email } };
+  rawSet("account", accSess);
+}
+function accClearSession(){ accSess = null; try{ localStorage.removeItem("wayyuh.account"); }catch(e){} }
+let accRefreshing = null;
+function accToken(){
+  if (!accSess) return Promise.reject(new Error("no session"));
+  if (accSess.expires_at - 60 > Date.now() / 1000) return Promise.resolve(accSess.access_token);
+  if (!accRefreshing) accRefreshing = accReq("/auth/v1/token?grant_type=refresh_token", { method: "POST", body: { refresh_token: accSess.refresh_token } })
+    .then(d => { accSetSession(d); return accSess.access_token; })
+    .catch(e => { if (e.status === 400 || e.status === 401){ accClearSession(); accUI(); } throw e; })
+    .finally(() => { accRefreshing = null; });
+  return accRefreshing;
+}
+function accErr(e){
+  if (e.net) return t("accErrNet");
+  const m = String(e.message || "").toLowerCase();
+  if (e.code === "email_address_invalid" || e.code === "email_address_not_authorized") return t("accErrMail");
+  if (e.status === 429 || m.includes("rate limit") || m.includes("too many")) return t("accErrRate");
+  if (m.includes("invalid login") || m.includes("invalid credentials")) return t("accErrCreds");
+  if (m.includes("not confirmed")) return t("accErrConfirm");
+  if (m.includes("password") && (m.includes("weak") || m.includes("least") || m.includes("short") || m.includes("characters"))) return t("accErrWeak");
+  if (m.includes("already registered")) return t("accErrCreds");
+  return t("accErrOther", { msg: e.message });
+}
+const accRedirect = () => encodeURIComponent(location.origin + location.pathname);
+async function accSignInReq(email, pass){
+  const d = await accReq("/auth/v1/token?grant_type=password", { method: "POST", body: { email, password: pass } });
+  return d;
+}
+async function accSignUpReq(email, pass){
+  return accReq("/auth/v1/signup?redirect_to=" + accRedirect(), { method: "POST", body: { email, password: pass } });
+}
+const syncMeta = () => store.get("syncMeta", null) || { uid: null, email: "", base: {}, local: {}, at: 0 };
+
+/* ---------- hashing (order-independent, so jsonb key reordering on the server never looks like a change) ---------- */
+function canon(v){
+  if (Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+  if (v && typeof v === "object") return "{" + Object.keys(v).filter(k => v[k] !== undefined).sort().map(k => JSON.stringify(k) + ":" + canon(v[k])).join(",") + "}";
+  return JSON.stringify(v === undefined ? null : v);
+}
+function hash53(s){
+  let h1 = 0xdeadbeef ^ s.length, h2 = 0x41c6ce57 ^ s.length;
+  for (let i = 0; i < s.length; i++){ const c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36) + ":" + s.length;
+}
+function syncLocalRows(){
+  const rows = new Map();
+  for (const k of SYNC_KEYS){
+    let v = store.get(k, undefined); if (v === undefined || v === null) continue;
+    if (k === "cfg"){ v = { ...v }; delete v.wallpaper; }   // the wallpaper itself lives only on this device
+    rows.set(k, v);
+  }
+  const chs = store.get("chats", {}) || {};
+  for (const [id, c] of Object.entries(chs)) if (c && Array.isArray(c.messages) && c.messages.length) rows.set("chat:" + id, c);
+  return rows;
+}
+const rowHash = v => hash53(canon(v));
+
+/* ---------- push: send rows whose hash changed, delete rows removed on this device ---------- */
+async function syncPush(){
+  if (!accSess || accState.pushing) return;
+  accState.pushing = true; setSyncStatus("syncing");
+  try{
+    const tok = await accToken(), uid = accSess.user.id, meta = syncMeta();
+    if (meta.uid && meta.uid !== uid) throw new Error(t("accErrOtherAcct", { email: meta.email || "?" }));
+    meta.uid = uid; meta.email = accSess.user.email;
+    const rows = syncLocalRows(), up = [], hashes = {};
+    for (const [k, v] of rows){ const h = rowHash(v); hashes[k] = h; if (meta.local[k] !== h) up.push({ user_id: uid, key: k, value: v, hash: h }); }
+    const del = Object.keys(meta.local).filter(k => !rows.has(k));
+    let chunk = [], size = 0, skipped = 0;
+    const flush = async () => {
+      if (!chunk.length) return;
+      await accReq("/rest/v1/wayyuh_sync?on_conflict=user_id,key", { method: "POST", token: tok, headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: chunk });
+      chunk.forEach(r => { meta.base[r.key] = r.hash; meta.local[r.key] = r.hash; });
+      chunk = []; size = 0;
+    };
+    for (const r of up){
+      const n = JSON.stringify(r).length;
+      if (n > 1900000){ skipped++; continue; }
+      if (size + n > 900000) await flush();
+      chunk.push(r); size += n;
+    }
+    await flush();
+    for (let i = 0; i < del.length; i += 40){
+      const part = del.slice(i, i + 40);
+      await accReq("/rest/v1/wayyuh_sync?user_id=eq." + uid + "&key=in." + encodeURIComponent("(" + part.map(k => '"' + k + '"').join(",") + ")"), { method: "DELETE", token: tok, headers: { Prefer: "return=minimal" } });
+      part.forEach(k => { delete meta.base[k]; delete meta.local[k]; });
+    }
+    meta.at = Date.now(); rawSet("syncMeta", meta);
+    setSyncStatus("ok", skipped ? t("accSkipped", { n: skipped }) : "");
+  }catch(e){ setSyncStatus("error", e.net ? t("accErrNet") : e.message); }
+  finally{ accState.pushing = false; }
+}
+function syncSchedule(){
+  if (!accSess) return;
+  clearTimeout(accState.timer);
+  accState.timer = setTimeout(() => { syncPush(); }, 4000);
+}
+
+/* ---------- pull: merge what changed on the server, then reload once so the app reads the new state ---------- */
+function syncResolve(k, L, R){
+  if (k.startsWith("chat:")) return (Number(L && L.updated) || 0) > (Number(R && R.updated) || 0) ? L : R;
+  if (Array.isArray(L) && Array.isArray(R)){
+    const m = new Map(); for (const x of [...R, ...L]){ const id = x && typeof x === "object" ? (x.id || x.text || JSON.stringify(x)) : String(x); if (!m.has(id)) m.set(id, x); }
+    return [...m.values()];
+  }
+  if (k === "projects" && L && R && typeof L === "object" && typeof R === "object") return { ...L, ...R };
+  return R;
+}
+const accIdle = () => { const inp = $("#input"), send = $("#sendBtn"); return !(inp && inp.value.trim()) && !(send && send.classList.contains("stop")); };
+async function syncPull(opts = {}){
+  if (!accSess || accState.pulling) return { changed: 0 };
+  accState.pulling = true; setSyncStatus("syncing");
+  let changed = 0;
+  try{
+    const tok = await accToken(), uid = accSess.user.id, meta = syncMeta();
+    if (meta.uid && meta.uid !== uid) throw new Error(t("accErrOtherAcct", { email: meta.email || "?" }));
+    meta.uid = uid; meta.email = accSess.user.email;
+    const remote = {};
+    (await accReq("/rest/v1/wayyuh_sync?select=key,hash&user_id=eq." + uid + "&order=key", { token: tok, headers: { "Range-Unit": "items", Range: "0-999" } }) || []).forEach(r => { remote[r.key] = r.hash; });
+    const rows = syncLocalRows(), lh = {}; for (const [k, v] of rows) lh[k] = rowHash(v);
+    const need = [], conflicts = [], dropLocal = [];
+    const keys = new Set([...Object.keys(remote), ...rows.keys(), ...Object.keys(meta.local)]);
+    for (const k of keys){
+      const inR = k in remote, inL = rows.has(k), hadL = k in meta.local;
+      const localChanged = inL && lh[k] !== meta.local[k], remoteChanged = inR && remote[k] !== meta.base[k];
+      if (inR && inL){
+        if (remote[k] === lh[k]){ meta.base[k] = remote[k]; meta.local[k] = lh[k]; }
+        else if (!hadL){ conflicts.push(k); }                          // first link: both sides have it
+        else if (remoteChanged && localChanged) conflicts.push(k);
+        else if (remoteChanged) need.push(k);
+      }else if (inR && !inL){
+        if (hadL && !remoteChanged){ /* deleted here: push removes it from the server */ }
+        else need.push(k);
+      }else if (!inR && inL){
+        if (hadL && !localChanged){ dropLocal.push(k); }               // deleted on another device
+        /* else new here: push uploads it */
+      }else if (hadL){ delete meta.base[k]; delete meta.local[k]; }
+    }
+    const fetchKeys = [...need, ...conflicts], vals = {};
+    for (let i = 0; i < fetchKeys.length; i += 25){
+      const part = fetchKeys.slice(i, i + 25);
+      (await accReq("/rest/v1/wayyuh_sync?select=key,value,hash&user_id=eq." + uid + "&key=in." + encodeURIComponent("(" + part.map(k => '"' + k + '"').join(",") + ")"), { token: tok }) || []).forEach(r => { vals[r.key] = r; });
+    }
+    const chs = { ...(store.get("chats", {}) || {}) };
+    const apply = (k, v, remoteHash) => {
+      if (k.startsWith("chat:")) chs[k.slice(5)] = v;
+      else if (k === "cfg"){ const cur = store.get("cfg", {}) || {}; rawSet("cfg", { ...v, wallpaper: cur.wallpaper }); }
+      else rawSet(k, v);
+      meta.base[k] = remoteHash;
+    };
+    for (const k of need){ const r = vals[k]; if (r){ apply(k, r.value, r.hash); changed++; } }
+    for (const k of conflicts){
+      const r = vals[k]; if (!r) continue;
+      apply(k, syncResolve(k, rows.get(k), r.value), r.hash); changed++;
+      if (k === "cfg") { /* settings: the account wins */ }
+    }
+    for (const k of dropLocal){ if (k.startsWith("chat:")) delete chs[k.slice(5)]; else localStorage.removeItem("wayyuh." + k); delete meta.base[k]; delete meta.local[k]; changed++; }
+    if (changed){
+      rawSet("chats", chs);
+      const after = syncLocalRows();
+      for (const k of [...need, ...conflicts]) if (after.has(k)){ const h = rowHash(after.get(k)); if (conflicts.includes(k)){ /* merged value differs from the server: leave local hash stale so push uploads it */ } else meta.local[k] = h; }
+    }
+    meta.at = Date.now(); rawSet("syncMeta", meta); accState.lastPull = Date.now();
+    setSyncStatus("ok");
+    if (changed && opts.reload !== false){
+      let last = 0; try{ last = +sessionStorage.getItem("wayyuh.syncReload") || 0; }catch(e){}
+      if (accIdle() && Date.now() - last > 30000){ try{ sessionStorage.setItem("wayyuh.syncReload", String(Date.now())); }catch(e){} location.reload(); return { changed }; }
+    }
+  }catch(e){ setSyncStatus("error", e.net ? t("accErrNet") : e.message); }
+  finally{ accState.pulling = false; }
+  return { changed };
+}
+async function syncNow(opts){ const r = await syncPull(opts); if (!r.changed || opts && opts.reload === false) await syncPush(); return r; }
+function setSyncStatus(s, msg){ accState.status = s; accState.msg = msg || ""; if (s === "ok") accState.at = Date.now(); accUI(); }
+
+/* ---------- boot: confirm-email and password-reset links return here with tokens in the URL hash ---------- */
+async function accHandleHash(){
+  if (!location.hash || location.hash.length < 10) return;
+  const p = new URLSearchParams(location.hash.slice(1));
+  if (p.get("error_description")){ toast(String(p.get("error_description")).replace(/\+/g, " "), "err"); history.replaceState(null, "", location.pathname + location.search); return; }
+  const at = p.get("access_token"); if (!at) return;
+  const type = p.get("type");
+  try{
+    const u = await accReq("/auth/v1/user", { token: at });
+    accSetSession({ access_token: at, refresh_token: p.get("refresh_token"), expires_in: +p.get("expires_in") || 3600, user: { id: u.id, email: u.email } });
+    history.replaceState(null, "", location.pathname + location.search);
+    if (type === "recovery"){ accState.recovery = true; setTimeout(() => openSettings("account"), 600); }
+    else toast(t("accWelcome"));
+  }catch(e){ toast(accErr(e), "err"); }
+}
+function accBoot(){
+  accHandleHash().finally(() => {
+    accUI();
+    if (accSess){ setTimeout(() => syncNow(), 900); }
+  });
+  setInterval(() => { if (accSess && !document.hidden) syncPull({ reload: accIdle() }); }, 5 * 60 * 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!accSess) return;
+    if (document.hidden){ clearTimeout(accState.timer); syncPush(); }
+    else if (Date.now() - accState.lastPull > 60000) syncPull({ reload: accIdle() });
+  });
+}
+
+/* ---------- actions used by the settings screen ---------- */
+async function accDoSignIn(email, pass){
+  const d = await accSignInReq(email, pass), meta = syncMeta();
+  if (meta.uid && meta.uid !== d.user.id){ const e = new Error(t("accErrOtherAcct", { email: meta.email || "?" })); e.status = 0; throw e; }
+  accSetSession(d); accUI();
+  toast(t("accWelcome"));
+  await syncNow();
+}
+async function accDoSignUp(email, pass){
+  const d = await accSignUpReq(email, pass);
+  if (d && d.access_token){
+    const meta = syncMeta(); if (meta.uid && meta.uid !== d.user.id) throw new Error(t("accErrOtherAcct", { email: meta.email || "?" }));
+    accSetSession(d); accUI(); toast(t("accWelcome")); await syncNow(); return "in";
+  }
+  return "confirm";
+}
+async function accDoSignOut(){
+  clearTimeout(accState.timer);
+  accState.pushing = false;
+  await syncPush();
+  if (accState.status === "error") throw new Error(t("accSignOutFail"));
+  try{ const tok = await accToken(); await accReq("/auth/v1/logout", { method: "POST", token: tok }); }catch(e){}
+  for (const k of [...SYNC_KEYS, "chats", "syncMeta", "current", "activeProject", "wx", "wxLoc"]) localStorage.removeItem("wayyuh." + k);
+  accClearSession();
+  location.reload();
+}
+async function accDoWipeCloud(){
+  const tok = await accToken(), uid = accSess.user.id;
+  await accReq("/rest/v1/wayyuh_sync?user_id=eq." + uid, { method: "DELETE", token: tok, headers: { Prefer: "return=minimal" } });
+  const meta = syncMeta(); meta.base = {}; meta.local = {}; rawSet("syncMeta", meta);
+}
+
+/* ---------- account screen (Settings > Akun) ---------- */
+function accWhen(ts){
+  const n = Math.max(0, Math.round((Date.now() - ts) / 60000));
+  return n < 1 ? t("accJustNow") : t("accAgo", { n });
+}
+function accStatusText(){
+  if (accState.status === "syncing") return t("accSyncing");
+  if (accState.status === "error") return t("accSyncErr", { msg: accState.msg });
+  const at = accState.at || syncMeta().at;
+  return (at ? t("accSyncOk", { when: accWhen(at) }) : t("accSyncIdle")) + (accState.msg ? " · " + accState.msg : "");
+}
+function accUI(){
+  const s = document.querySelector(".who-row .s");
+  if (s){
+    if (accSess){ s.removeAttribute("data-i18n"); s.textContent = accSess.user.email; }
+    else if (!s.hasAttribute("data-i18n")){ s.setAttribute("data-i18n", "localOnly"); s.textContent = t("localOnly"); }
+  }
+  const body = document.getElementById("accBody"); if (body) accRender(body);
+}
+function accLegalLinks(){
+  return `<a href="/terms/" target="_blank" rel="noopener">${esc(t("accTermsL"))}</a> ${esc(t("accAnd"))} <a href="/privacy/" target="_blank" rel="noopener">${esc(t("accPrivL"))}</a>`;
+}
+function accArm(btn, label, armedLabel, run){
+  let armed = null;
+  btn.addEventListener("click", async () => {
+    if (!armed){ btn.classList.add("confirm"); btn.querySelector("span").textContent = armedLabel; armed = setTimeout(() => { armed = null; btn.classList.remove("confirm"); btn.querySelector("span").textContent = label; }, 3500); return; }
+    clearTimeout(armed); armed = null; btn.disabled = true;
+    try{ await run(); }catch(e){ toast(e && e.message ? e.message : String(e), "err"); }
+    btn.disabled = false; btn.classList.remove("confirm"); const sp = btn.querySelector("span"); if (sp) sp.textContent = label;
+  });
+}
+function accRender(body){
+  if (!accSess){
+    if (body.dataset.mode === "out") return;
+    body.dataset.mode = "out";
+    body.innerHTML = `
+      <div class="account-card">${ic("cloud")}<span><b>${esc(t("accTitle"))}</b><br>${esc(t("accIntro"))}</span></div>
+      <div class="seg" id="accSeg" role="group" aria-label="${esc(t("secAccount"))}"><button type="button" data-m="in" aria-pressed="true">${esc(t("accSignIn"))}</button><button type="button" data-m="up" aria-pressed="false">${esc(t("accSignUp"))}</button></div>
+      <form class="acc-form" id="accForm" novalidate>
+        <div class="field"><label for="accEmail">${esc(t("accEmail"))}</label><input id="accEmail" type="email" inputmode="email" autocomplete="email" maxlength="120"></div>
+        <div class="field"><label for="accPass">${esc(t("accPass"))}</label><input id="accPass" type="password" autocomplete="current-password" maxlength="72"><small id="accPassH" hidden>${esc(t("accPassH"))}</small></div>
+        <p class="meta" id="accMsg" role="status" aria-live="polite"></p>
+        <div class="sheet-actions" style="justify-content:flex-start"><button class="btn primary" type="submit" id="accGo">${esc(t("accSignIn"))}</button><button class="btn" type="button" id="accForgot">${esc(t("accForgot"))}</button></div>
+        <p class="meta acc-terms">${esc(t("accTerms"))} ${accLegalLinks()}.</p>
+      </form>`;
+    let mode = "in"; const msg = $("#accMsg", body), go = $("#accGo", body), pass = $("#accPass", body), hint = $("#accPassH", body);
+    const say = (txt, err) => { msg.textContent = txt || ""; msg.classList.toggle("err", !!err); };
+    body.querySelectorAll("#accSeg button").forEach(b => b.addEventListener("click", () => {
+      mode = b.dataset.m; body.querySelectorAll("#accSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      go.textContent = t(mode === "up" ? "accSignUp" : "accSignIn"); pass.autocomplete = mode === "up" ? "new-password" : "current-password"; hint.hidden = mode !== "up"; say("");
+    }));
+    $("#accForm", body).addEventListener("submit", async e => {
+      e.preventDefault();
+      const email = $("#accEmail", body).value.trim(), pw = pass.value;
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say(t("accNeedEmail"), true);
+      if (mode === "up" && pw.length < 8) return say(t("accErrWeak"), true);
+      if (!pw) return say(t("accErrCreds"), true);
+      go.disabled = true; say(t("accWorking"));
+      try{
+        if (mode === "in") await accDoSignIn(email, pw);
+        else if (await accDoSignUp(email, pw) === "confirm"){ say(t("accConfirmSent", { email })); }
+      }catch(err){ say(err.status === 0 ? err.message : accErr(err), true); }
+      go.disabled = false;
+    });
+    $("#accForgot", body).addEventListener("click", async () => {
+      const email = $("#accEmail", body).value.trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return say(t("accNeedEmail"), true);
+      say(t("accWorking"));
+      try{ await accReq("/auth/v1/recover?redirect_to=" + accRedirect(), { method: "POST", body: { email } }); say(t("accRecoverSent")); }
+      catch(err){ say(accErr(err), true); }
+    });
+    return;
+  }
+  body.dataset.mode = "in";
+  body.innerHTML = `
+    <div class="account-card">${ic("cloud")}<span><b>${esc(accSess.user.email)}</b><br><span id="accStat">${esc(accStatusText())}</span></span></div>
+    ${accState.recovery ? `<p class="meta">${esc(t("accRecovery"))}</p>` : ""}
+    <div class="sheet-actions" style="justify-content:flex-start">
+      <button class="btn" type="button" id="accSync">${ic("refresh")}<span>${esc(t("accSyncNow"))}</span></button>
+      <button class="btn" type="button" id="accOut">${ic("close")}<span>${esc(t("accSignOut"))}</span></button>
+    </div>
+    <h3>${esc(t("accPass"))}</h3>
+    <form class="acc-form" id="accPwForm" novalidate>
+      <div class="field"><label for="accNewPass">${esc(t("accNewPass"))}</label><input id="accNewPass" type="password" autocomplete="new-password" maxlength="72"><small>${esc(t("accPassH"))}</small></div>
+      <p class="meta" id="accPwMsg" role="status" aria-live="polite"></p>
+      <div class="sheet-actions" style="justify-content:flex-start"><button class="btn" type="submit">${esc(t("accChangePass"))}</button></div>
+    </form>
+    <h3>${esc(t("accCloudData"))}</h3>
+    <p class="meta">${esc(t("accCloudNote"))}</p>
+    <div class="sheet-actions" style="justify-content:flex-start"><button class="btn danger" type="button" id="accWipe">${ic("trash")}<span>${esc(t("accWipe"))}</span></button></div>
+    <p class="meta">${esc(t("accDeleteNote"))}<br>${accLegalLinks()}</p>`;
+  $("#accSync", body).addEventListener("click", async () => {
+    const b = $("#accSync", body); b.disabled = true;
+    const r = await syncNow({ reload: true }); b.disabled = false;
+    if (accState.status !== "error") toast(r.changed ? t("accSynced") : t("accUpToDate"));
+  });
+  accArm($("#accOut", body), t("accSignOut"), t("accSignOutConfirm"), accDoSignOut);
+  accArm($("#accWipe", body), t("accWipe"), t("accWipeConfirm"), async () => { await accDoWipeCloud(); toast(t("accWiped")); });
+  $("#accPwForm", body).addEventListener("submit", async e => {
+    e.preventDefault(); const pw = $("#accNewPass", body).value, m = $("#accPwMsg", body);
+    if (pw.length < 8){ m.textContent = t("accErrWeak"); m.classList.add("err"); return; }
+    try{ const tok = await accToken(); await accReq("/auth/v1/user", { method: "PUT", token: tok, body: { password: pw } }); $("#accNewPass", body).value = ""; accState.recovery = false; m.textContent = t("accPassChanged"); m.classList.remove("err"); }
+    catch(err){ m.textContent = accErr(err); m.classList.add("err"); }
+  });
+}
 
 /* ================= small UI helpers ================= */
 function toast(text, kind){
@@ -4430,6 +4809,7 @@ function renderWelcome(){
       <span>${esc(t("madeBy", { creator: CREATOR, powered: POWERED }))}</span>
       <span class="hx-foot-dim">${esc(t("disclaim"))}</span>
       <span class="hx-foot-dim">${esc(t("footVer"))}</span>
+      <span class="hx-foot-dim hx-legal"><a href="/terms/" target="_blank" rel="noopener">${esc(t("navTerms"))}</a> · <a href="/privacy/" target="_blank" rel="noopener">${esc(t("navPrivacy"))}</a></span>
       <span class="hw-only hx-hw-note">${esc(t("hwFoot"))}</span>
       <a class="hx-foot-dim hx-credit" id="hCredit" target="_blank" rel="noopener" hidden></a>
     </footer>`;
@@ -5852,6 +6232,7 @@ function wxContext(){
 
 /* ---------- extra icons ---------- */
 Object.assign(ICONS, {
+  user: '<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.9-3.6 3.8-5.4 7.5-5.4s6.6 1.8 7.5 5.4"/>',
   tree: '<path d="M12 3l5 6h-2.5l4 5h-3l3.5 4.5h-14L8.5 14h-3l4-5H7z"/><path d="M12 18.5V21"/>',
   firework: '<path d="M12 12V21M12 3v2.5M12 12l-4.6-4.6M12 12l4.6-4.6M12 12H4M12 12h8M6.3 6.3L5 5M17.7 6.3L19 5M5.5 15.5l-1 1M18.5 15.5l1 1"/>',
   flag: '<path d="M5 21V4"/><path d="M5 4.5h13l-2.5 4 2.5 4H5"/>',
@@ -6055,9 +6436,11 @@ function openProfile(){
         <div class="pf-colors">${AV_COLORS.map((c, i) => `<button type="button" data-col="${i}" class="${a.color === i ? "on" : ""}" style="background:linear-gradient(135deg,${c[0]},${c[1]})" aria-label="${L("Warna", "Colour")} ${i + 1}"></button>`).join("")}</div></div>
       <div class="pf-streak"><span class="pf-flame">${ic("flame")}</span><span><b>${s.streak} ${esc(L("hari berturut-turut", "day streak"))}</b><small>${esc(L(`Rekor terbaik: ${s.best} hari`, `Best: ${s.best} days`))}</small></span>
         <div class="pf-days" aria-label="${esc(L("28 hari terakhir", "Last 28 days"))}">${days.map(v => `<i class="${v ? "on" : ""}"></i>`).join("")}</div></div>
+      <button class="btn pf-acc" type="button" id="pfAccount">${ic("user")}<span>${esc(accSess ? accSess.user.email : t("accGoSignIn"))}</span></button>
       <h3>${esc(L("Lencana", "Badges"))}</h3>
       <div class="pf-badges">${BADGES.map(([id, em, name, how]) => `<div class="bdg${got.has(id) ? " on" : ""}" title="${esc(sv(how))}"><span class="bdg-m">${em}</span><b>${esc(sv(name))}</b><small>${esc(sv(how))}</small></div>`).join("")}</div>`;
     sh.querySelector("[data-close]").addEventListener("click", () => closeModal("#profileModal"));
+    $("#pfAccount").addEventListener("click", () => { closeModal("#profileModal"); openSettings("account"); });
     sh.querySelectorAll("[data-em]").forEach(b => b.addEventListener("click", () => { store.set("avatar", { ...avatarCfg(), emoji: b.dataset.em }); refreshAvatars(); draw(); }));
     sh.querySelectorAll("[data-col]").forEach(b => b.addEventListener("click", () => { store.set("avatar", { ...avatarCfg(), color: +b.dataset.col }); refreshAvatars(); draw(); }));
   };
@@ -6300,7 +6683,7 @@ function capRow(label, state){
   return `<div class="cap"><span>${esc(label)}</span><span class="st ${cls}">${esc(txt)}</span></div>`;
 }
 let installEvt = null;
-function openSettings(){
+function openSettings(startSec){
   const sh = $("#settingsSheet");
   const chk = capsState === "checking";
   const st = ok => chk ? "checking" : ok ? "on" : "need";
@@ -6309,11 +6692,15 @@ function openSettings(){
     <div class="sheet-top"><h2>${esc(t("setTitle"))}</h2><button class="icon-btn" type="button" data-close aria-label="${esc(t("close"))}">${ic("close")}</button></div>
     <div class="set-layout">
     <nav class="set-nav" role="tablist" aria-label="${esc(t("setTitle"))}">
-      ${[["general", "edit", "secGeneral"], ["look", "sun", "secLook"], ["style", "sparkle", "secStyle"], ["memory", "brain", "secMemory"], ["weather", "wxCloudSun", "secWeather"], ["data", "lock", "secData"], ["server", "cloud", "secServer"]]
-        .map(([k, icn, l], i) => `<button type="button" role="tab" data-sec="${k}" aria-selected="${i === 0}">${ic(icn)}<span>${esc(t(l))}</span></button>`).join("")}
+      ${[["account", "user", "secAccount"], ["general", "edit", "secGeneral"], ["look", "sun", "secLook"], ["style", "sparkle", "secStyle"], ["memory", "brain", "secMemory"], ["weather", "wxCloudSun", "secWeather"], ["data", "lock", "secData"], ["server", "cloud", "secServer"]]
+        .map(([k, icn, l], i) => `<button type="button" role="tab" data-sec="${k}" aria-selected="false">${ic(icn)}<span>${esc(t(l))}</span></button>`).join("")}
     </nav>
     <div class="set-body">
-    <section class="set-sec" data-sec="general">
+    <section class="set-sec" data-sec="account" hidden>
+    <h3>${esc(t("secAccount"))}</h3>
+    <div id="accBody"></div>
+    </section>
+    <section class="set-sec" data-sec="general" hidden>
     <h3>${esc(t("setProfile"))}</h3>
     <div class="grid2">
       <div class="field"><label for="setName">${esc(t("setNick"))}</label><input id="setName" maxlength="40" autocomplete="nickname"><small>${esc(t("setNickH"))}</small></div>
@@ -6378,7 +6765,7 @@ function openSettings(){
     </section>
     <section class="set-sec" data-sec="data" hidden>
     <h3>${esc(t("setData"))}</h3>
-    <div class="account-card">${ic("lock")}<span><b>${esc(t("dataStats", { chats: Object.values(chats).filter(c => c.messages.length).length, mems: memories.length, notes: notes.length }))}</b><br>${esc(t("dataNote"))}</span></div>
+    <div class="account-card">${ic("lock")}<span><b>${esc(t("dataStats", { chats: Object.values(chats).filter(c => c.messages.length).length, mems: memories.length, notes: notes.length }))}</b><br>${esc(t(accSess ? "dataNoteAcc" : "dataNote"))}</span></div>
     <div class="sheet-actions" style="justify-content:flex-start">
       <button class="btn" type="button" id="setExport">${ic("download")}<span>${esc(t("dataExport"))}</span></button>
       <button class="btn" type="button" id="setImport">${ic("up")}<span>${esc(t("dataImport"))}</span></button>
@@ -6407,7 +6794,8 @@ function openSettings(){
       if (!d) return; e.preventDefault(); const n = tabs[(i + d + tabs.length) % tabs.length]; n.focus(); showSec(n.dataset.sec);
     });
   });
-  showSec("general");
+  showSec(typeof startSec === "string" && sh.querySelector(`.set-sec[data-sec="${startSec}"]`) ? startSec : "general");
+  accRender($("#accBody"));
   $("#setExport").addEventListener("click", () => {
     const data = { app: "wayyuh", kind: "backup", version: 1, exported: new Date().toISOString(), cfg, chats, projects, memories, notes, tasks, memAuto };
     download(`wayyuh-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 1), "application/json");
@@ -6848,6 +7236,7 @@ addEventListener("appinstalled", () => toast(t("installed")));
 /* ================= boot ================= */
 (function boot(){
   renderIcons();
+  accBoot();
   $("#brandSlot").outerHTML = tile();
   $("#topMarkSlot").outerHTML = tile();
   $("#newChatBtn").insertAdjacentHTML("beforebegin", `<h2 class="lib-h" data-i18n="libTitle">${esc(t("libTitle"))}</h2>`);
