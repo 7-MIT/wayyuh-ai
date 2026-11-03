@@ -35,7 +35,7 @@ Trailer peluncuran Wayyuh AI (48 detik, 1080p, 24 fps, stereo): AI yang digabung
 Akun bersifat opsional (masuk atau daftar dari bagian Profil). Satu akun menyimpan chat, memori, proyek, catatan, tugas, pengaturan, avatar, dan aktivitas di United Wayyuh Server (Supabase), dan data itu ikut ke perangkat mana pun saat masuk.
 
 - Basis data: tabel `public.wayyuh_sync` (satu baris per `user_id` + `key`; kunci `cfg`, `avatar`, `act`, `projects`, `memories`, `notes`, `tasks`, `memAuto`, dan `chat:<id>`). Row level security membatasi tiap akun hanya ke barisnya sendiri; `anon` tidak punya akses.
-- Autentikasi: email dan kata sandi lewat Supabase Auth. Kunci publik (`ACC_KEY`) memang aman ada di browser.
+- Autentikasi: email dan kata sandi, atau **Masuk dengan Google**, lewat Supabase Auth (penyedia Google sudah aktif di project; alamat produksi harus ada di Redirect URLs). Kunci publik (`ACC_KEY`) memang aman ada di browser.
 - Sinkronisasi memakai hash per baris: hanya baris yang berubah dikirim, penghapusan ikut menyebar, dan keluar dari akun membersihkan data di perangkat setelah tersimpan.
 - Wallpaper buatan sendiri, lokasi cuaca, dan status tampilan perangkat tidak ikut disinkronkan.
 

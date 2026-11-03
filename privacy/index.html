@@ -45,7 +45,8 @@ footer{max-width:820px;margin:48px auto 0;padding-top:20px;border-top:1px solid 
 <tr><td>Pesan, berkas, dan gambar yang kamu kirim di chat</td><td>Saat kamu mengirim pesan</td><td>Dikirim ke server AI untuk diproses. Riwayatnya tersimpan di browsermu, dan di akunmu bila kamu masuk dengan akun.</td></tr>
 <tr><td>Riwayat chat, proyek, memori, catatan, tugas, pengaturan, dan avatar</td><td>Saat kamu memakai aplikasi</td><td>Browser perangkatmu (localStorage). Disalin ke United Wayyuh Server hanya bila kamu masuk dengan akun.</td></tr>
 <tr><td>Wallpaper buatanmu</td><td>Saat kamu memasangnya</td><td>Hanya di perangkatmu (IndexedDB). Tidak pernah diunggah.</td></tr>
-<tr><td>Email dan kata sandi akun</td><td>Saat kamu mendaftar atau masuk</td><td>Layanan autentikasi di United Wayyuh Server. Kata sandi disimpan dalam bentuk hash, bukan teks asli.</td></tr>
+<tr><td>Email dan kata sandi akun</td><td>Saat kamu mendaftar atau masuk</td><td>Layanan autentikasi di United Wayyuh Server. Kata sandi (bila kamu masuk dengan email) disimpan dalam bentuk hash, bukan teks asli.</td></tr>
+<tr><td>Akun Google (opsional)</td><td>Hanya jika kamu memilih masuk dengan Google</td><td>Google memberi tahu United Wayyuh Server alamat email (serta nama dan foto profil publik) akunmu. Kami memakai email itu sebagai identitas akunmu. Kata sandi Google tidak pernah sampai ke kami.</td></tr>
 <tr><td>Lokasi untuk cuaca</td><td>Hanya jika kamu mengaktifkan fitur cuaca</td><td>Koordinat atau nama kota dikirim ke Open-Meteo untuk mengambil cuaca. Lokasi tersimpan di perangkatmu dan tidak ikut disinkronkan ke akun.</td></tr>
 <tr><td>Data teknis (alamat IP, jenis browser)</td><td>Setiap kali aplikasi memuat sumber daya atau memanggil server</td><td>Diterima oleh server dan penyedia CDN yang dipakai, seperti lazimnya layanan web.</td></tr>
 </tbody></table></div>
@@ -66,6 +67,7 @@ footer{max-width:820px;margin:48px auto 0;padding-top:20px;border-top:1px solid 
 <tbody>
 <tr><td>Server intelligence.7mit (<a href="https://intelligence.7mit.org" rel="noopener">intelligence.7mit.org</a>)</td><td>Menghasilkan jawaban AI, termasuk pencarian web dan analisis berkas</td><td>Pesan, lampiran, konteks (memori, nama panggilan, instruksi), dan alamat IP. Server ini dapat meneruskannya ke penyedia model AI yang dipakainya. Pengelolaan data di sana tunduk pada kebijakan intelligence.7mit.</td></tr>
 <tr><td>United Wayyuh Server (Supabase)</td><td>Autentikasi dan penyimpanan akun</td><td>Email, hash kata sandi, dan data yang kamu sinkronkan.</td></tr>
+<tr><td>Google (Masuk dengan Google)</td><td>Masuk ke akun tanpa kata sandi baru</td><td>Google mengetahui bahwa kamu masuk ke Wayyuh AI. Data yang Google terima mengikuti kebijakan privasi Google.</td></tr>
 <tr><td>Open-Meteo</td><td>Cuaca dan pencarian kota</td><td>Koordinat atau nama kota, hanya bila fitur cuaca dipakai.</td></tr>
 <tr><td>Unsplash (images.unsplash.com)</td><td>Foto latar beranda</td><td>Alamat IP dan data teknis browser saat foto dimuat.</td></tr>
 <tr><td>Google Fonts</td><td>Huruf antarmuka</td><td>Alamat IP dan data teknis browser saat huruf dimuat.</td></tr>
