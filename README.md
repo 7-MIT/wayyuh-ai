@@ -14,5 +14,5 @@ Buka `http://localhost:8080`. Manifest, service worker, dan ikon (`manifest.webm
 
 - Data lama (`sunday.*` di localStorage) disalin otomatis ke `wayyuh.*` saat pertama dibuka.
 - Cadangan JSON dari Sunday masih bisa diimpor.
-- Backend tetap memakai Supabase Edge Function `sunday-ai` (lihat `SERVER_URL` di `index.html`). Ganti URL itu bila fungsi di-deploy ulang dengan nama baru.
+- Server AI: Supabase Edge Function `intellegence-7mit-public` (lihat `SERVER_URL` di `index.html`).
 - Wallpaper kustom (IndexedDB `sunday-kv`) tidak ikut terbawa; pasang ulang dari Pengaturan.
