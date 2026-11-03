@@ -44,3 +44,7 @@ Pengaturan yang perlu ada di dashboard Supabase supaya pendaftaran dan tautan em
 ## Halaman hukum
 
 `/terms/` (Ketentuan Layanan) dan `/privacy/` (Kebijakan Privasi) adalah halaman statis di `terms/index.html` dan `privacy/index.html`. Kontak keluhan: halo@7mit.org.
+
+## Model Fast dan Pro
+
+Tombol model di kotak chat menawarkan **Fast** dan **Pro**. Aplikasi mengikuti server: jika jawaban status (GET) atau ping server memuat daftar `models` (array string, atau objek dengan `id`, `label`, `description`, `model`), daftar itu yang dipakai. Jika tidak, aplikasi memakai dua id standar, `fast` dan `pro`, dan mengirim id yang dipilih sebagai field `model` di setiap permintaan. Bila server menolak model dengan error 400 yang menyebut "model", aplikasi kembali ke model pertama dan memberi tahu pengguna.

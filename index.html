@@ -501,6 +501,7 @@ kbd{font:500 11px var(--mono);color:var(--faint);border:1px solid var(--line-2);
 .mem-add{display:flex;gap:8px}
 .mem-add input{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);border-radius:10px;padding:9px 12px;outline:none}
 .mem-add input:focus{border-color:var(--accent)}
+#modelBtn{margin-left:8px}
 .acc-form{display:flex;flex-direction:column;gap:12px}
 #accSeg{margin:14px 0 6px}
 .acc-terms a{color:var(--accent)}
@@ -1065,7 +1066,7 @@ html[data-theme="dark"] .shell.home .main{color-scheme:dark}
 .shell.home .dock.in-hero .composer{padding:16px 12px 12px 20px}
 .shell.home .dock.in-hero .composer textarea{font-size:17.5px;min-height:56px}
 .shell.home .c-row{gap:2px;margin-left:-8px}
-.shell.home .c-row #searchBtn,.shell.home .c-row #modelBtn,.shell.home .c-row #slashBtn{display:none}
+.shell.home .c-row #searchBtn,.shell.home .c-row #slashBtn{display:none}
 .shell.home .tool{width:38px;height:38px;min-width:38px;padding:0;border-radius:12px;color:var(--hx-ink2)}
 .shell.home .tool svg{width:19px;height:19px}
 .shell.home .tool:hover:not(:disabled){background:var(--hx-hover);color:var(--hx-ink)}
@@ -2205,7 +2206,7 @@ html.has-photo[data-theme="light"] .welcome .hx-title .l2{background-image:linea
                 <button type="button" class="tool plus" id="plusBtn" data-i18n-aria="plusMenu"><i data-ic="plus"></i></button>
                 <input type="file" id="fileInput" multiple hidden accept="image/*,application/pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.java,.kt,.c,.cpp,.cs,.go,.rs,.php,.rb,.sql,.xml,.yaml,.yml">
                 <button type="button" class="tool" id="searchBtn" aria-pressed="false"><i data-ic="globe"></i><span class="lbl" data-i18n="webSearch">Cari web</span></button>
-                <button type="button" class="tool" id="modelBtn"><i data-ic="sparkle"></i><span class="lbl" id="modelLbl">Cepat</span><i data-ic="chevron"></i></button>
+                <button type="button" class="tool" id="modelBtn"><i data-ic="sparkle"></i><span class="lbl" id="modelLbl">Fast</span><i data-ic="chevron"></i></button>
                 <button type="button" class="tool slash" id="slashBtn" data-i18n-aria="tools">/</button>
                 <span class="spacer"></span>
                 <button type="button" class="tool" id="micBtn" data-i18n-aria="voice" hidden><i data-ic="mic"></i></button>
@@ -2418,8 +2419,8 @@ const I18N = {
     attachTypesImg: "Foto (JPG, PNG, WEBP)", fileTooBig: "File terlalu besar. Maksimal {max}.", fileUnsupported: "Jenis file ini belum didukung.",
     filesNeedServer: "Server saat ini belum bisa membaca foto atau PDF. Perbarui fungsi intellegence-7mit-public ke versi 2.",
     maxFiles: "Maksimal {n} lampiran per pesan.",
-    needServer: "Butuh server versi 2", modelFast: "Cepat", modelSmart: "Pintar", modelOnly: "Satu mode tersedia",
-    modelFastD: "Jawaban cepat untuk keseharian", modelSmartD: "Lebih teliti untuk soal sulit",
+    needServer: "Butuh server versi 2", modelFast: "Fast", modelPro: "Pro", modelOnly: "Satu mode tersedia", modelFallback: "Server belum menerima model itu, kembali ke model pertama.",
+    modelFastD: "Jawaban cepat untuk keseharian", modelProD: "Lebih teliti untuk soal sulit dan analisis mendalam",
     setTitle: "Pengaturan", setProfile: "Profil", setNick: "Nama panggilanmu", setNickH: "Dipakai Wayyuh AI untuk menyapamu.",
     setAi: "Panggil AI-nya dengan", setAiH: "Kosongkan untuk tetap \"Wayyuh AI\".", setLook: "Tampilan", setLang: "Bahasa", setTheme: "Tema",
     themeAuto: "Otomatis (Sesuai Waktu)", themeLight: "Terang", themeDark: "Gelap",
@@ -2517,8 +2518,8 @@ const I18N = {
     attachTypesImg: "Photos (JPG, PNG, WEBP)", fileTooBig: "File too large. Maximum {max}.", fileUnsupported: "This file type isn't supported yet.",
     filesNeedServer: "The current server can't read photos or PDFs yet. Update the intellegence-7mit-public function to version 2.",
     maxFiles: "Up to {n} attachments per message.",
-    needServer: "Needs server v2", modelFast: "Fast", modelSmart: "Smart", modelOnly: "One mode available",
-    modelFastD: "Quick answers for everyday questions", modelSmartD: "More careful for hard problems",
+    needServer: "Needs server v2", modelFast: "Fast", modelPro: "Pro", modelOnly: "One mode available", modelFallback: "The server doesn't accept that model yet, so the first model is used.",
+    modelFastD: "Quick answers for everyday questions", modelProD: "More careful for hard problems and deeper analysis",
     setTitle: "Settings", setProfile: "Profile", setNick: "Your nickname", setNickH: "Wayyuh AI uses it to greet you.",
     setAi: "Call the AI", setAiH: "Leave empty to keep \"Wayyuh AI\".", setLook: "Appearance", setLang: "Language", setTheme: "Theme",
     themeAuto: "Auto (by time of day)", themeLight: "Light", themeDark: "Dark",
@@ -3434,7 +3435,28 @@ function highlightIn(root){
 }
 
 /* ================= server capabilities ================= */
-const V1_CAPS = { version: 1, stream: false, files: [], search: false, quizJson: false, maxMessage: 4000, maxFiles: 0, models: [{ id: "fast" }] };
+/* Models: Fast and Pro. The server is the authority: if its status or ping answer lists models, those are used (ids, labels, descriptions);
+   otherwise the app offers the two standard ids "fast" and "pro" and sends the chosen id as `model`. */
+const MODEL_DEFAULTS = [{ id: "fast" }, { id: "pro" }];
+const V1_CAPS = { version: 1, stream: false, files: [], search: false, quizJson: false, maxMessage: 4000, maxFiles: 0, models: MODEL_DEFAULTS };
+function pickModels(o){
+  if (!o || typeof o !== "object") return null;
+  const src = [o.models, o.data && o.data.models, o.capabilities && o.capabilities.models, o.data && o.data.capabilities && o.data.capabilities.models].find(Array.isArray);
+  if (!src) return null;
+  const out = [];
+  for (const m of src){
+    if (typeof m === "string" && m.trim()) out.push({ id: m.trim() });
+    else if (m && typeof m === "object"){
+      const id = String(m.id || m.key || m.name || m.model || "").trim();
+      if (id) out.push({ id, label: String(m.label || m.title || m.name || "").trim() || undefined, model: m.model && m.model !== id ? String(m.model) : undefined, desc: String(m.description || m.desc || "").trim() || undefined });
+    }
+  }
+  return out.length ? out : null;
+}
+const isPro = m => /^(pro|smart|thinking|deep)$/i.test(m.id);
+const modelLabel = m => m.label || (isPro(m) ? t("modelPro") : /^fast$/i.test(m.id) ? t("modelFast") : cap1(m.id));
+const modelIcon = m => isPro(m) ? "sparkle" : "bolt";
+const modelDesc = m => m.desc || (isPro(m) ? t("modelProD") : /^fast$/i.test(m.id) ? t("modelFastD") : (m.model || ""));
 let caps = Object.assign({}, V1_CAPS, store.get("caps", null) || {});
 let capsState = "checking";
 const v2 = () => caps.version >= 2;
@@ -3455,8 +3477,15 @@ async function probeCaps(){
       ? Object.assign({}, V1_CAPS, { version: data.version || 2 }, data.capabilities)
       : Object.assign({}, V1_CAPS);   // a v1 server answers the ping with 400 "message is empty"
     capsState = "known"; store.set("caps", caps);
+    // a status answer (GET) may also list the models this server offers
+    try{
+      const g = await fetch(SERVER_URL, { headers: reqHeaders() }).then(x => x.json());
+      const ms = pickModels(g); if (ms) caps = Object.assign({}, caps, { models: ms });
+    }catch(e){}
+    if (!Array.isArray(caps.models) || !caps.models.length) caps.models = MODEL_DEFAULTS;
+    store.set("caps", caps);
   }catch(e){ capsState = "unreachable"; }
-  if (!caps.models.some(m => m.id === cfg.model)){ cfg.model = "fast"; saveCfg(); }
+  if (!caps.models.some(m => m.id === cfg.model)){ cfg.model = caps.models[0].id; saveCfg(); }
   onCapsChanged();
 }
 
@@ -3487,6 +3516,7 @@ function errorFromStatus(status, data){
   if (status === 429) return new WayyuhError("busy", (data && data.error) || t("errBusy"), { status });
   if (status === 413) return new WayyuhError("tooLong", (data && data.error) || t("errTooLong", { max: (caps.maxMessage || 4000).toLocaleString(locale()) }));
   if (status === 400 && data && data.error) return new WayyuhError("bad", data.error);
+  if (status === 401 || status === 403) return new WayyuhError("server", t("errServer", { code: status }), { details: data && (data.details || data.error), status });
   return new WayyuhError("server", (data && data.error) || t("errServer", { code: status }), { details: data && (data.details || data.error), status });
 }
 // Sends one request. While streaming, onDelta(textSoFar) is called. Resolves {text, meta}.
@@ -3565,7 +3595,7 @@ function buildBody({ prompt, history, files = [], mode = "chat", search = false,
   let ctx = contextBlock({ compact: true, digest: digest.slice(0, 300) });
   if (ctx.length + prompt.length + 4 > max) ctx = ctx.split("\n").filter(l => !l.startsWith("- ")).join("\n");
   if (ctx.length + prompt.length + 4 > max) ctx = "";
-  return { message: (ctx ? ctx + "\n\n" : "") + prompt, history: history.slice(-6).map(h => ({ role: h.role, content: h.content.slice(0, 2000) })), mode };
+  return { message: (ctx ? ctx + "\n\n" : "") + prompt, history: history.slice(-6).map(h => ({ role: h.role, content: h.content.slice(0, 2000) })), mode, model: cfg.model };
 }
 // short list of the older questions that no longer fit in the history sent with a request (no extra request needed)
 function olderDigest(chat, entryId, sent){
@@ -3580,6 +3610,9 @@ async function requestWithRetry(body, opts, onRetry){
   for (let attempt = 0; ; attempt++){
     try{ return await requestAI(body, opts); }
     catch(e){
+      if (e.kind === "bad" && body.model && /model/i.test(String(e.userMsg || e.message)) && caps.models && caps.models[0] && body.model !== caps.models[0].id){
+        body.model = cfg.model = caps.models[0].id; saveCfg(); renderComposerTools(); toast(t("modelFallback")); attempt--; continue;
+      }
       const retryable = (e.kind === "net" || e.kind === "busy" || (e.kind === "server" && (!e.status || e.status >= 500))) && !(e.partial && e.partial.trim());
       if (!retryable || attempt >= 2 || (opts.signal && opts.signal.aborted)) throw e;
       if (onRetry) onRetry(attempt + 1);
@@ -5615,10 +5648,10 @@ function renderComposerTools(){
   sb.setAttribute("aria-pressed", String(!!(cfg.search && caps.search)));
   const sl = caps.search ? (cfg.search ? t("webSearchOn") : t("webSearch")) : `${t("webSearch")} · ${t("needServer")}`;
   sb.title = sl; sb.setAttribute("aria-label", sl);
-  const mb = $("#modelBtn"), models = caps.models || [{ id: "fast" }];
+  const mb = $("#modelBtn"), models = caps.models || MODEL_DEFAULTS;
   const curM = models.find(m => m.id === cfg.model) || models[0];
-  $("#modelLbl").textContent = curM.id === "smart" ? t("modelSmart") : t("modelFast");
-  mb.title = `${t("modelPick")}${curM.model ? " · " + curM.model : ""}`;
+  $("#modelLbl").textContent = modelLabel(curM);
+  mb.title = `${t("modelPick")} · ${modelLabel(curM)}${curM.model ? " (" + curM.model + ")" : ""}`;
   mb.setAttribute("aria-label", mb.title);
   const at = $("#attachBtn"); at.title = t("attachFile"); at.setAttribute("aria-label", t("attachFile"));
   // image upload needs the newer server; the button stays, explains itself when pressed, and looks dimmed
@@ -5632,12 +5665,11 @@ function renderComposerTools(){
   $("#footnote").textContent = t("footnote", { creator: CREATOR, powered: POWERED });
 }
 function modelMenu(anchor){
-  const models = caps.models || [{ id: "fast" }];
+  const models = caps.models || MODEL_DEFAULTS;
   showMenu(anchor, [
     { header: models.length > 1 ? t("modelPick") : t("modelOnly") },
-    ...models.map(m => ({ label: m.id === "smart" ? t("modelSmart") : t("modelFast"), icon: m.id === "smart" ? "sparkle" : "sun", on: cfg.model === m.id, hint: m.model || "",
-      onClick: () => { cfg.model = m.id; saveCfg(); renderComposerTools(); } })),
-    models.length < 2 ? { label: t("modelSmart") + " · " + t("needServer"), icon: "sparkle", disabled: true } : null
+    ...models.map(m => ({ label: modelLabel(m), icon: modelIcon(m), on: cfg.model === m.id, hint: modelDesc(m),
+      onClick: () => { cfg.model = m.id; saveCfg(); renderComposerTools(); } }))
   ]);
 }
 /* palette for slash commands */
@@ -5693,14 +5725,14 @@ function initComposer(){
   $("#plusBtn").insertAdjacentHTML("afterend", `<button type="button" class="guru-pill" id="guruPill" hidden>${ic("cap")}<span data-i18n="guruMode">${esc(t("guruMode"))}</span>${ic("close")}</button>`);
   $("#guruPill").addEventListener("click", () => toggleGuru(false));
   $("#plusBtn").addEventListener("click", e => {
-    const btn = e.currentTarget, models = caps.models || [{ id: "fast" }];
+    const btn = e.currentTarget, models = caps.models || MODEL_DEFAULTS;
     const curM = models.find(m => m.id === cfg.model) || models[0];
     showMenu(btn, [
       { label: t("attach"), icon: "clip", onClick: () => { $("#fileInput").click(); } },
       { label: caps.search ? t("webSearch") : `${t("webSearch")} · ${t("needServer")}`, icon: "globe", on: !!(cfg.search && caps.search), disabled: !caps.search,
         onClick: () => { cfg.search = !cfg.search; saveCfg(); renderComposerTools(); toast(cfg.search ? t("webSearchOn") : t("webSearch")); } },
       { label: t("guruMode"), icon: "cap", on: !!cfg.guru, hint: t("guruHint"), onClick: () => { toggleGuru(); } },
-      { label: t("modelPick"), icon: "sparkle", hint: curM.id === "smart" ? t("modelSmart") : t("modelFast"), onClick: () => { modelMenu(btn); return true; } },
+      { label: t("modelPick"), icon: "sparkle", hint: modelLabel(curM), onClick: () => { modelMenu(btn); return true; } },
       { label: t("tools"), icon: "grid", onClick: () => { input.value = "/"; input.focus(); palIndex = 0; updatePalette(); updateSend(); } }
     ]);
   });
