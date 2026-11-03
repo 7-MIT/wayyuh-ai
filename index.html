@@ -506,7 +506,7 @@ kbd{font:500 11px var(--mono);color:var(--faint);border:1px solid var(--line-2);
 .acc-terms a{color:var(--accent)}
 #accMsg.err,#accPwMsg.err{color:var(--danger)}
 .btn.confirm{border-color:var(--danger);color:var(--danger)}
-.pf-acc{width:100%;justify-content:center}
+.sheet.profile #accBody{display:flex;flex-direction:column;gap:12px}
 .hx-legal a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 .imp-step{display:flex;gap:12px;align-items:flex-start}
 .imp-n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 13px var(--mono);border:1px solid var(--line-2);color:var(--muted)}
@@ -2947,7 +2947,7 @@ async function accHandleHash(){
     const u = await accReq("/auth/v1/user", { token: at });
     accSetSession({ access_token: at, refresh_token: p.get("refresh_token"), expires_in: +p.get("expires_in") || 3600, user: { id: u.id, email: u.email } });
     history.replaceState(null, "", location.pathname + location.search);
-    if (type === "recovery"){ accState.recovery = true; setTimeout(() => openSettings("account"), 600); }
+    if (type === "recovery"){ accState.recovery = true; setTimeout(() => openProfile(), 600); }
     else toast(t("accWelcome"));
   }catch(e){ toast(accErr(e), "err"); }
 }
@@ -6436,11 +6436,12 @@ function openProfile(){
         <div class="pf-colors">${AV_COLORS.map((c, i) => `<button type="button" data-col="${i}" class="${a.color === i ? "on" : ""}" style="background:linear-gradient(135deg,${c[0]},${c[1]})" aria-label="${L("Warna", "Colour")} ${i + 1}"></button>`).join("")}</div></div>
       <div class="pf-streak"><span class="pf-flame">${ic("flame")}</span><span><b>${s.streak} ${esc(L("hari berturut-turut", "day streak"))}</b><small>${esc(L(`Rekor terbaik: ${s.best} hari`, `Best: ${s.best} days`))}</small></span>
         <div class="pf-days" aria-label="${esc(L("28 hari terakhir", "Last 28 days"))}">${days.map(v => `<i class="${v ? "on" : ""}"></i>`).join("")}</div></div>
-      <button class="btn pf-acc" type="button" id="pfAccount">${ic("user")}<span>${esc(accSess ? accSess.user.email : t("accGoSignIn"))}</span></button>
+      <h3>${esc(t("secAccount"))}</h3>
+      <div id="accBody"></div>
       <h3>${esc(L("Lencana", "Badges"))}</h3>
       <div class="pf-badges">${BADGES.map(([id, em, name, how]) => `<div class="bdg${got.has(id) ? " on" : ""}" title="${esc(sv(how))}"><span class="bdg-m">${em}</span><b>${esc(sv(name))}</b><small>${esc(sv(how))}</small></div>`).join("")}</div>`;
     sh.querySelector("[data-close]").addEventListener("click", () => closeModal("#profileModal"));
-    $("#pfAccount").addEventListener("click", () => { closeModal("#profileModal"); openSettings("account"); });
+    accRender($("#accBody"));
     sh.querySelectorAll("[data-em]").forEach(b => b.addEventListener("click", () => { store.set("avatar", { ...avatarCfg(), emoji: b.dataset.em }); refreshAvatars(); draw(); }));
     sh.querySelectorAll("[data-col]").forEach(b => b.addEventListener("click", () => { store.set("avatar", { ...avatarCfg(), color: +b.dataset.col }); refreshAvatars(); draw(); }));
   };
@@ -6692,14 +6693,10 @@ function openSettings(startSec){
     <div class="sheet-top"><h2>${esc(t("setTitle"))}</h2><button class="icon-btn" type="button" data-close aria-label="${esc(t("close"))}">${ic("close")}</button></div>
     <div class="set-layout">
     <nav class="set-nav" role="tablist" aria-label="${esc(t("setTitle"))}">
-      ${[["account", "user", "secAccount"], ["general", "edit", "secGeneral"], ["look", "sun", "secLook"], ["style", "sparkle", "secStyle"], ["memory", "brain", "secMemory"], ["weather", "wxCloudSun", "secWeather"], ["data", "lock", "secData"], ["server", "cloud", "secServer"]]
+      ${[["general", "edit", "secGeneral"], ["look", "sun", "secLook"], ["style", "sparkle", "secStyle"], ["memory", "brain", "secMemory"], ["weather", "wxCloudSun", "secWeather"], ["data", "lock", "secData"], ["server", "cloud", "secServer"]]
         .map(([k, icn, l], i) => `<button type="button" role="tab" data-sec="${k}" aria-selected="false">${ic(icn)}<span>${esc(t(l))}</span></button>`).join("")}
     </nav>
     <div class="set-body">
-    <section class="set-sec" data-sec="account" hidden>
-    <h3>${esc(t("secAccount"))}</h3>
-    <div id="accBody"></div>
-    </section>
     <section class="set-sec" data-sec="general" hidden>
     <h3>${esc(t("setProfile"))}</h3>
     <div class="grid2">
@@ -6795,7 +6792,6 @@ function openSettings(startSec){
     });
   });
   showSec(typeof startSec === "string" && sh.querySelector(`.set-sec[data-sec="${startSec}"]`) ? startSec : "general");
-  accRender($("#accBody"));
   $("#setExport").addEventListener("click", () => {
     const data = { app: "wayyuh", kind: "backup", version: 1, exported: new Date().toISOString(), cfg, chats, projects, memories, notes, tasks, memAuto };
     download(`wayyuh-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data, null, 1), "application/json");
