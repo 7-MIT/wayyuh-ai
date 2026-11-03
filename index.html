@@ -5466,7 +5466,7 @@ function updateSky(){
 }
 
 /* ================= real photos (Unsplash, free licence) =================
-   Indonesian landscapes only. One photo per day: the list is shuffled with a seed that changes every
+   Indonesian landscapes and landmarks only. One photo per day: the list is shuffled with a seed that changes every
    full cycle, so every photo shows once before any repeats and the order differs from cycle to cycle.
    The animated mesh underneath stays as the fallback when photos can't load (offline, strict previews). */
 const ID_PHOTOS = [
@@ -5484,7 +5484,18 @@ const ID_PHOTOS = [
   { id: "1604560929658-bbc3c2ba6a36", by: "Fajruddin Mudzakkir", page: "https://unsplash.com/s/photos/komodo-island", pos: "50% 55%" },  // Padar, Komodo
   { id: "1601058497548-f247dfe349d6", by: "Irfannur Diah", page: "https://unsplash.com/s/photos/lake-toba", pos: "50% 55%" },            // Danau Toba
   { id: "1623598122059-9b5ef17619c8", by: "Marcel R", page: "https://unsplash.com/s/photos/lake-toba", pos: "50% 60%" },                 // Danau Toba
-  { id: "1780748528710-75dfc3e9c91f", by: "Rowan Heuvel", page: "https://unsplash.com/s/photos/borobudur", pos: "50% 60%" }              // Borobudur
+  { id: "1780748528710-75dfc3e9c91f", by: "Rowan Heuvel", page: "https://unsplash.com/s/photos/borobudur", pos: "50% 60%" },             // Borobudur
+  { id: "1506255677943-8d8cb3619c10", by: "David Wollschlegel", page: "https://unsplash.com/photos/dRi6xP2ZPBk", pos: "50% 55%" },   // Rinjani
+  { id: "1654046920188-6e7ee051d7a4", by: "Fahrul Razi", page: "https://unsplash.com/photos/OYDPdqZdJY4", pos: "50% 55%" },   // Segara Anak, Rinjani
+  { id: "1654047624570-3a0c91aadf06", by: "Fahrul Razi", page: "https://unsplash.com/photos/yADLu7phWUY", pos: "50% 50%" },   // Rinjani
+  { id: "1569239014934-593f8152d506", by: "Bao Menglong", page: "https://unsplash.com/photos/Ff2xjQgoZig", pos: "50% 55%" },   // Pura Ulun Danu Bratan, Bali
+  { id: "1604999333679-b86d54738315", by: "Guillaume Marques", page: "https://unsplash.com/photos/bnMPFPuSCI0", pos: "50% 55%" },   // Pura Ulun Danu Bratan, Bali
+  { id: "1781080020355-75784a5ca9f6", by: "Rowan Heuvel", page: "https://unsplash.com/photos/resK56xgmVk", pos: "50% 55%" },   // Candi Prambanan
+  { id: "1761014505415-e55a95c576a6", by: "yahdi yasya", page: "https://unsplash.com/photos/b-urmJWBoRc", pos: "50% 50%" },   // Monas, Jakarta
+  { id: "1636984011278-886b13d0772d", by: "Mosquegrapher", page: "https://unsplash.com/s/photos/istiqlal-mosque", pos: "50% 55%" },   // Masjid Istiqlal, Jakarta
+  { id: "1740500574894-d2c33117f31e", by: "Iqro Rinaldi", page: "https://unsplash.com/s/photos/istiqlal-mosque", pos: "50% 55%" },   // Masjid Istiqlal, Jakarta
+  { id: "1602057512587-76d5cc4b34e2", by: "Angga Kurniawan", page: "https://unsplash.com/s/photos/tugu-yogyakarta", pos: "50% 55%" },   // Tugu Yogyakarta
+  { id: "1754615842174-7e6c8d1f0ca3", by: "Mayuki Indana", page: "https://unsplash.com/photos/mZS00Kfy7T4", pos: "50% 60%" }    // Jam Gadang, Bukittinggi
 ];
 function dailyPhoto(){
   const n = ID_PHOTOS.length, d = new Date();
