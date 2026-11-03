@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Wayyuh AI · Trailer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Sans:wght@400;500;700&display=swap">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block;width:1920px;height:1080px}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script>
+/* Wayyuh AI trailer: a deterministic canvas timeline. window.draw(t) renders any time t (seconds); the renderer
+   steps t frame by frame, so the result does not depend on machine speed. 48 s, 120 BPM (a beat = 0.5 s). */
+"use strict";
+const W = 1920, H = 1080, DUR = 48;
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const DISPLAY = '"Bricolage Grotesque","Plus Jakarta Sans",system-ui,sans-serif', BODY = '"DM Sans",Inter,system-ui,sans-serif';
+const EM = "#4DEFB0", LIME = "#B6F25A", AMB = "#FFC857", TEAL = "#46AAD2";
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eOut = x => 1 - Math.pow(1 - x, 3), eOut5 = x => 1 - Math.pow(1 - x, 5), eIn = x => x * x * x;
+const eIO = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eExpo = x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
+const lerp = (a, b, k) => a + (b - a) * k;
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const IMG = {}; const names = ["bromo","raja","padar","bratan","prambanan","monas","tegal","toba","borobudur","rinjani"];
+function loadImg(src){ return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
+
+/* ---------- reusable layers ---------- */
+const noise = document.createElement("canvas"); noise.width = noise.height = 256;
+(function(){ const n = noise.getContext("2d"), d = n.createImageData(256, 256), r = rng(7); for (let i = 0; i < d.data.length; i += 4){ const v = r() * 255; d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; } n.putImageData(d, 0, 0); })();
+const P = (() => { const r = rng(11), a = []; for (let i = 0; i < 260; i++) a.push({ x: r() * W, y: r() * H, z: .3 + r() * .9, ph: r() * 6.28, sp: .3 + r() * .9, c: r() < .62 ? EM : (r() < .6 ? AMB : "#ffffff") }); return a; })();
+
+function cover(img, alpha, scale, ox, oy, dx = 0, dy = 0){   // draw an image "object-fit: cover" with zoom and pan
+  if (!img) return;
+  const s = Math.max(W / img.width, H / img.height) * scale, w = img.width * s, h = img.height * s;
+  ctx.globalAlpha = alpha; ctx.drawImage(img, (W - w) * ox + dx, (H - h) * oy + dy, w, h); ctx.globalAlpha = 1;
+}
+function glowCircle(x, y, r, color, a){ const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, color); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = a; ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); ctx.globalAlpha = 1; }
+function rgba(hex, a){ const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function text(str, x, y, o = {}){
+  const { size = 80, weight = 800, font = DISPLAY, color = "#fff", align = "center", alpha = 1, spacing = 0, glow = 0, glowColor = EM, blur = 0, base = "middle" } = o;
+  if (alpha <= 0.001) return;
+  ctx.save(); ctx.globalAlpha = alpha; ctx.font = `${weight} ${size}px ${font}`; ctx.textAlign = align; ctx.textBaseline = base;
+  ctx.letterSpacing = spacing + "px"; if (blur) ctx.filter = `blur(${blur}px)`;
+  if (glow){ ctx.shadowColor = glowColor; ctx.shadowBlur = glow; }
+  ctx.fillStyle = color; ctx.fillText(str, x, y); ctx.restore();
+}
+function roundRect(x, y, w, h, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+function background(t, tint = 1){
+  ctx.fillStyle = "#04080A"; ctx.fillRect(0, 0, W, H);
+  const k = Math.sin(t * .35);
+  glowCircle(W * (.28 + .06 * k), H * .3, 900, "rgba(24,150,104,.55)", .32 * tint);
+  glowCircle(W * (.74 - .05 * k), H * .72, 820, "rgba(255,184,64,.40)", .16 * tint);
+  glowCircle(W * .5, H * .96, 900, "rgba(40,140,200,.45)", .20 * tint);
+}
+function particles(t, amount = 1, speed = 1, boost = 0){
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < P.length * amount; i++){
+    const p = P[i], x = (p.x + Math.sin(t * .2 * p.sp * speed + p.ph) * 60 * p.z) % W, y = ((p.y - t * 14 * p.z * speed) % H + H) % H;
+    const tw = .45 + .55 * Math.sin(t * 1.6 * p.sp + p.ph), r = (1 + p.z * 2.6) * (1 + boost);
+    ctx.fillStyle = rgba(p.c === "#ffffff" ? "#ffffff" : p.c, .55 * tw * p.z); ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+  }
+  ctx.restore();
+}
+function finish(t, fadeIn = 0, fadeOut = 0){   // grain, vignette, letterbox, global fades
+  ctx.save(); ctx.globalCompositeOperation = "overlay"; ctx.globalAlpha = .10;
+  const f = Math.floor(t * 24), r = rng(f * 977 + 3), ox = Math.floor(r() * 256), oy = Math.floor(r() * 256);
+  for (let y = -oy; y < H; y += 256) for (let x = -ox; x < W; x += 256) ctx.drawImage(noise, x, y);
+  ctx.restore();
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * 1.0); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.62)");
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  const bar = (H - W / 2.39) / 2; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, bar); ctx.fillRect(0, H - bar, W, bar);
+  if (fadeIn > 0){ ctx.fillStyle = `rgba(0,0,0,${1 - prog(t, 0, fadeIn)})`; ctx.fillRect(0, 0, W, H); }
+  if (fadeOut > 0){ ctx.fillStyle = `rgba(0,0,0,${prog(t, DUR - fadeOut, DUR)})`; ctx.fillRect(0, 0, W, H); }
+}
+function flare(x, y, len, a, color = "#9CFFE0"){   // anamorphic streak
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  const g = ctx.createLinearGradient(x - len, 0, x + len, 0); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(.5, rgba(color, a)); g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g; ctx.fillRect(x - len, y - 3, len * 2, 6);
+  glowCircle(x, y, len * .35, rgba(color, .9), a * .7); ctx.restore();
+}
+/* ---------- the W mark ---------- */
+const WP = [[13,21],[22.5,45],[32,27],[41.5,45],[51,21]];
+function wLen(){ let L = 0; for (let i = 1; i < WP.length; i++) L += Math.hypot(WP[i][0]-WP[i-1][0], WP[i][1]-WP[i-1][1]); return L; }
+const WL = wLen();
+function drawW(cx, cy, size, p, o = {}){   // p: 0..1 draw progress
+  const s = size / 64; ctx.save(); ctx.translate(cx - 32 * s, cy - 32 * s); ctx.scale(s, s);
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  if (o.tile !== false){
+    const g = ctx.createLinearGradient(6, 0, 58, 64); g.addColorStop(0, "#052A1F"); g.addColorStop(.62, "#0E9F6E"); g.addColorStop(1, "#B6F35A");
+    ctx.globalAlpha = o.tileAlpha ?? 1; ctx.fillStyle = g; roundRect(0, 0, 64, 64, 19); ctx.fill(); ctx.globalAlpha = 1;
+  }
+  ctx.shadowColor = o.glowColor || EM; ctx.shadowBlur = (o.glow ?? 24) / s; ctx.strokeStyle = "#fff"; ctx.lineWidth = 5.2;
+  ctx.setLineDash([WL * p, WL * 2]); ctx.beginPath(); WP.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.setLineDash([]);
+  if (p > .98){ ctx.shadowBlur = 14 / s; ctx.fillStyle = AMB; ctx.beginPath(); ctx.arc(51, 21, 3.6 + .9 * Math.sin((o.t || 0) * 3), 0, 6.283); ctx.fill(); }
+  ctx.restore();
+}
+/* ---------- ECG line ---------- */
+function ecgY(x, period, amp){ const u = ((x % period) + period) % period / period; const pts = [[0,0],[.34,0],[.38,-.14],[.42,0],[.47,0],[.5,.35],[.54,-1],[.58,.6],[.62,0],[.7,0],[.76,-.2],[.82,0],[1,0]];
+  for (let i = 1; i < pts.length; i++) if (u <= pts[i][0]){ const a = pts[i-1], b = pts[i], k = (u - a[0]) / (b[0] - a[0]); return lerp(a[1], b[1], k) * amp; } return 0; }
+function ecg(x0, x1, cy, amp, period, shift, a = 1){
+  ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+  const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, rgba(EM, 0)); g.addColorStop(.2, rgba(EM, a)); g.addColorStop(.8, rgba(AMB, a)); g.addColorStop(1, rgba(AMB, 0));
+  ctx.strokeStyle = g; ctx.lineWidth = 5; ctx.shadowColor = EM; ctx.shadowBlur = 30; ctx.beginPath();
+  for (let x = x0; x <= x1; x += 3){ const y = cy + ecgY(x - shift, period, amp); x === x0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+  ctx.stroke(); ctx.restore();
+}
+/* ---------- UI screens ---------- */
+function screen(img, cx, cy, w, rot, a, extra = {}){
+  if (!img || a <= 0) return;
+  const h = w * img.height / img.width; ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+  if (extra.skew) ctx.transform(1, extra.skew[1], extra.skew[0], 1, 0, 0);
+  ctx.globalAlpha = a; ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 90; ctx.shadowOffsetY = 40;
+  roundRect(-w / 2, -h / 2, w, h, 26); ctx.fillStyle = "#0b1210"; ctx.fill(); ctx.shadowColor = "transparent";
+  ctx.save(); roundRect(-w / 2, -h / 2, w, h, 26); ctx.clip(); ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  const sh = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); sh.addColorStop(0, "rgba(255,255,255,.10)"); sh.addColorStop(.35, "rgba(255,255,255,0)"); ctx.fillStyle = sh; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.restore();
+  ctx.strokeStyle = "rgba(190,255,225,.28)"; ctx.lineWidth = 2; roundRect(-w / 2, -h / 2, w, h, 26); ctx.stroke(); ctx.restore();
+}
+function crop(img, sx, sy, sw, sh, cx, cy, scale, rot, a){   // a floating UI snippet
+  if (!img || a <= 0) return; const w = sw * scale, h = sh * scale;
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.globalAlpha = a; ctx.shadowColor = "rgba(0,0,0,.65)"; ctx.shadowBlur = 60; ctx.shadowOffsetY = 28;
+  roundRect(-w / 2, -h / 2, w, h, 24); ctx.fillStyle = "#0b1210"; ctx.fill(); ctx.shadowColor = "transparent";
+  ctx.save(); roundRect(-w / 2, -h / 2, w, h, 24); ctx.clip(); ctx.drawImage(img, sx, sy, sw, sh, -w / 2, -h / 2, w, h); ctx.restore();
+  ctx.strokeStyle = "rgba(190,255,225,.35)"; ctx.lineWidth = 2; roundRect(-w / 2, -h / 2, w, h, 24); ctx.stroke(); ctx.restore();
+}
+function shake(t, amp){ const r = rng(Math.floor(t * 60) + 5); ctx.translate((r() - .5) * amp, (r() - .5) * amp); }
+
+/* ================= scenes ================= */
+const CX = W / 2, CY = H / 2;
+function sceneA(t){   // 0–5.2 : a single pulse
+  background(t, .35 * eOut(prog(t, 0, 2)));
+  const p = prog(t, .3, 4.2), x1 = lerp(CX - 760, CX + 760, eIO(p));
+  ecg(CX - 760, x1, CY + 20, 170, 560, -t * 40, 1);
+  particles(t, .5, .6);
+  const a = eOut(prog(t, 1.2, 2.4)) * (1 - prog(t, 4.3, 5.0));
+  text("Setiap gagasan besar", CX, CY - 250, { size: 74, weight: 700, alpha: a, spacing: -1, blur: (1 - eOut(prog(t, 1.2, 2.4))) * 14 });
+  text("dimulai dari satu denyut.", CX, CY - 165, { size: 74, weight: 700, alpha: eOut(prog(t, 1.8, 3)) * (1 - prog(t, 4.3, 5.0)), spacing: -1, color: EM, glow: 26, blur: (1 - eOut(prog(t, 1.8, 3))) * 14 });
+}
+function orb(x, y, r, color, label, a, t, s, la = 1){
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  glowCircle(x, y, r * 3.2, rgba(color, .55), a * .55); glowCircle(x, y, r * 1.5, rgba(color, 1), a * .9);
+  ctx.restore();
+  ctx.save(); ctx.globalAlpha = a; const g = ctx.createRadialGradient(x - r * .3, y - r * .35, r * .1, x, y, r); g.addColorStop(0, "#fff"); g.addColorStop(.25, rgba(color, 1)); g.addColorStop(1, rgba(color, .15));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+  for (let i = 0; i < 3; i++){ const rr = r * (1.35 + i * .32) + Math.sin(t * 2 + i) * 6; ctx.strokeStyle = rgba(color, .35 - i * .09); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.283); ctx.stroke(); }
+  ctx.restore();
+  text(label, x, y + r * 2.15 + 30, { size: s, weight: 800, alpha: a * la, spacing: 1, glow: 24, glowColor: color });
+}
+function sceneB(t){   // 5–12 : two forces converge
+  background(t, 1); particles(t, 1, 1.2, prog(t, 8, 12) * 1.2);
+  const k = eIn(prog(t, 7.2, 12)), lx = lerp(CX - 470, CX - 10, k), rx = lerp(CX + 470, CX + 10, k);
+  ctx.save(); shake(t, 30 * prog(t, 9, 12));
+  const a = eOut(prog(t, 5.3, 6.6));
+  orb(lx, CY - 20, lerp(70, 92, k), AMB, "E.B.I.S.I", a, t, lerp(46, 40, k), 1 - prog(k, .25, .55));
+  orb(rx, CY - 20, lerp(70, 92, k), EM, "intelligence.7mit", a, t, lerp(46, 40, k), 1 - prog(k, .25, .55));
+  ctx.restore();
+  const tt = (1 - prog(t, 11.1, 11.7));
+  text("Dua kekuatan.", CX, 255, { size: 70, weight: 700, alpha: eOut(prog(t, 5.6, 6.8)) * tt, spacing: -1, blur: (1 - eOut(prog(t, 5.6, 6.8))) * 12 });
+  text("Satu tujuan.", CX, 340, { size: 70, weight: 700, alpha: eOut(prog(t, 8.2, 9.4)) * tt, spacing: -1, color: LIME, glow: 22, glowColor: LIME, blur: (1 - eOut(prog(t, 8.2, 9.4))) * 12 });
+  if (t > 11.2){ const f = prog(t, 11.2, 12); ctx.save(); ctx.globalCompositeOperation = "lighter"; glowCircle(CX, CY - 20, 200 + 900 * f * f, "#ffffff", .9 * f * f); ctx.restore(); }
+}
+function sceneD(t){   // 12–19.5 : impact, logo, title
+  const T = t - 12, w = Math.min(1, T / 1.3);
+  background(t, 1 + .6 * (1 - w)); particles(t, 1, .8, .6 * (1 - w));
+  ctx.save(); shake(t, 38 * Math.pow(1 - clamp(T / .9), 2));
+  for (let i = 0; i < 4; i++){ const p = prog(T, i * .12, i * .12 + 1.6), r = eOut5(p) * 1500; ctx.strokeStyle = rgba(i % 2 ? AMB : EM, (1 - p) * .85); ctx.lineWidth = 16 * (1 - p) + 2; ctx.beginPath(); ctx.arc(CX, CY, r, 0, 6.283); ctx.stroke(); }
+  if (T < 1.4) flare(CX, CY, 1100 * (1 - prog(T, 0, 1.4)), 1 - prog(T, 0, 1.4));
+  const lp = eOut(prog(T, .15, 1.3)), tp = eExpo(prog(T, .1, .9));
+  const wy = lerp(CY, CY - 150, eIO(prog(T, 1.6, 2.6)));
+  drawW(CX, wy, lerp(300, 190, eIO(prog(T, 1.6, 2.6))), lp, { t, glow: 40, tileAlpha: prog(T, .2, .9) });
+  ctx.restore();
+  // title
+  const title = "WAYYUH AI", size = 190, base = CY + 110; ctx.save(); ctx.font = `800 ${size}px ${DISPLAY}`; ctx.letterSpacing = "6px";
+  const tw = ctx.measureText(title).width; ctx.restore();
+  let x = CX - tw / 2; const sweep = lerp(-.3, 1.3, prog(T, 3.0, 4.2));
+  for (let i = 0; i < title.length; i++){
+    const ch = title[i]; ctx.save(); ctx.font = `800 ${size}px ${DISPLAY}`; ctx.letterSpacing = "6px"; const cw = ctx.measureText(ch).width; ctx.restore();
+    const p = eOut5(prog(T, 2.1 + i * .06, 2.9 + i * .06)), cx = x + cw / 2, u = (cx - (CX - tw / 2)) / tw;
+    const hi = Math.max(0, 1 - Math.abs(u - sweep) * 7);
+    ctx.save(); ctx.globalAlpha = p; ctx.translate(cx, base + (1 - p) * 70); ctx.font = `800 ${size}px ${DISPLAY}`; ctx.letterSpacing = "6px"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.filter = `blur(${(1 - p) * 16}px)`; ctx.shadowColor = EM; ctx.shadowBlur = 40 * hi + 12;
+    ctx.fillStyle = hi > 0 ? `rgb(${255},${255},${255 - 40 * (1 - hi)})` : "#EAF5EE"; ctx.fillText(ch, 0, 0); ctx.restore();
+    x += cw;
+  }
+  if (T > 3 && T < 4.4) flare(lerp(CX - tw / 2, CX + tw / 2, sweep), base, 420, .85 * Math.sin(Math.PI * prog(T, 3, 4.4)));
+  const s1 = eOut(prog(T, 4.0, 5.0)), s2 = eOut(prog(T, 5.0, 6.0));
+  text("TELAH DILUNCURKAN", CX, base + 150, { size: 46, weight: 700, font: BODY, spacing: 22, alpha: s1, color: EM, glow: 18 });
+  text("AI yang menyatu dengan E.B.I.S.I dan intelligence.7mit", CX, base + 225, { size: 38, weight: 500, font: BODY, alpha: s2 * .92, color: "#D9EDE3" });
+  const out = prog(T, 7.0, 7.5); if (out > 0){ ctx.fillStyle = `rgba(0,0,0,${out})`; ctx.fillRect(0, 0, W, H); }
+}
+function sceneE1(t){   // 19.5–23.5 : the home screen
+  const T = t - 19.5; background(t, .9); particles(t, .7, .7);
+  const p = eOut(prog(T, 0, 1.2)), push = 1 + .05 * (T / 4);
+  ctx.save(); ctx.translate(CX, CY); ctx.scale(push, push); ctx.translate(-CX, -CY);
+  screen(IMG.home, CX + 300, CY + 10, 1160, -.045 * (1 - p) - .018, p, {});
+  crop(IMG.home, 410, 425, 780, 150, CX - 420, CY + 250, .8, .04, eOut(prog(T, .6, 1.4)) * 1);
+  crop(IMG.home, 555, 575, 495, 52, CX + 560, CY - 250, 1.0, -.05, eOut(prog(T, .85, 1.6)));
+  ctx.restore();
+  const a = eOut(prog(T, .2, .9)) * (1 - prog(T, 3.7, 4)); text("Tanya apa", 170, CY - 70, { size: 104, weight: 800, align: "left", alpha: a, spacing: -3, glow: 30, blur: (1 - a) * 10 });
+  text("saja.", 170, CY + 45, { size: 104, weight: 800, align: "left", alpha: eOut(prog(T, .4, 1.1)) * (1 - prog(T, 3.7, 4)), spacing: -3, glow: 30, color: EM, blur: (1 - eOut(prog(T, .4, 1.1))) * 10 });
+}
+function sceneE2(t){   // 23.5–27.5 : the chat
+  const T = t - 23.5; background(t, .9); particles(t, .7, .7);
+  const p = eOut(prog(T, 0, 1.1)), push = 1.04 + .05 * (T / 4);
+  ctx.save(); ctx.translate(CX, CY); ctx.scale(push, push); ctx.translate(-CX, -CY);
+  screen(IMG.chat, CX + 330, CY, 1180, .03 * (1 - p) + .012, p, {});
+  crop(IMG.chat, 590, 240, 740, 130, CX - 330, CY + 270, .8, .04, eOut(prog(T, .7, 1.5)));
+  crop(IMG.chat, 810, 120, 500, 70, CX + 560, CY - 270, 1.0, -.03, eOut(prog(T, 1.0, 1.7)));
+  ctx.restore();
+  const a = eOut(prog(T, .2, .9)) * (1 - prog(T, 3.7, 4)); text("Belajar", 170, CY - 70, { size: 104, weight: 800, align: "left", alpha: a, spacing: -3, glow: 30, blur: (1 - a) * 10 });
+  text("lebih cepat.", 170, CY + 45, { size: 104, weight: 800, align: "left", alpha: eOut(prog(T, .4, 1.1)) * (1 - prog(T, 3.7, 4)), spacing: -3, glow: 30, color: EM, blur: (1 - eOut(prog(T, .4, 1.1))) * 10 });
+}
+const FEATS = [["38", "alat untuk belajar, berencana,", "dan berkarya"], ["Web", "jawaban terkini dengan", "sumber yang bisa dibuka"], ["Dokumen", "baca dan analisis dokumen", "dan gambar"], ["Memori", "milikmu, tersimpan di", "perangkatmu"]];
+function sceneE3(t){   // 27.5–30.5 : kinetic feature words
+  const T = t - 27.5, i = Math.min(3, Math.floor(T / .75)), L = (T - i * .75) / .75, f = FEATS[i];
+  background(t, 1); cover(IMG[["toba", "bratan", "bromo", "tegal"][i]], .22, 1.15 + .05 * L, .5, .5); particles(t, .6, 1.4, .3);
+  ctx.save(); shake(t, 14 * Math.pow(1 - L, 3)); const p = eOut5(prog(L, 0, .35));
+  text(f[0], CX, CY - 50, { size: f[0].length > 4 ? 230 : 330, weight: 800, spacing: -8, alpha: Math.min(1, p * 1.4) * (1 - prog(L, .9, 1)), color: i % 2 ? AMB : EM, glow: 60, glowColor: i % 2 ? AMB : EM, blur: (1 - p) * 20 });
+  text(f[1], CX, CY + 150, { size: 46, weight: 500, font: BODY, alpha: eOut(prog(L, .15, .5)) * (1 - prog(L, .9, 1)) });
+  text(f[2], CX, CY + 206, { size: 46, weight: 500, font: BODY, alpha: eOut(prog(L, .2, .55)) * (1 - prog(L, .9, 1)) });
+  ctx.restore();
+}
+function sceneE4(t){   // 30.5–33.5 : Indonesia, fast cuts
+  const T = t - 30.5, n = 6, i = Math.min(n - 1, Math.floor(T / .5)), L = (T - i * .5) / .5, seq = ["raja", "bromo", "prambanan", "padar", "bratan", "monas"];
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  cover(IMG[seq[i]], eOut(prog(L, 0, .12)), 1.06 + .1 * L, .5, .5, (i % 2 ? 1 : -1) * 40 * L);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "rgba(0,0,0,.25)"); g.addColorStop(1, "rgba(0,0,0,.65)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  if (L < .1){ ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = `rgba(160,255,225,${.55 * (1 - L / .1)})`; ctx.fillRect(0, 0, W, H); ctx.restore(); }
+  const a = eOut(prog(T, .3, 1.2)); text("Jelajahi", CX, CY - 10, { size: 260, weight: 800, spacing: -8, alpha: a, glow: 50, blur: (1 - a) * 18 });
+  text("Nusantara", CX, CY + 160, { size: 70, weight: 500, font: BODY, spacing: 24, alpha: eOut(prog(T, 1.0, 1.8)), color: LIME, glow: 20, glowColor: LIME });
+}
+function sceneF(t){   // 33.5–41 : three words, then the union
+  const T = t - 33.5; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  const imgs = ["raja", "rinjani", "borobudur"]; const i = Math.min(2, Math.floor(T / 1.5)), L = (T - i * 1.5) / 1.5;
+  cover(IMG[imgs[i]], .5 * eOut(prog(L, 0, .2)), 1.04 + .06 * (T / 7.5), .5, .5);
+  ctx.fillStyle = "rgba(2,8,6,.45)"; ctx.fillRect(0, 0, W, H); particles(t, .6, .8);
+  const words = ["Berpikir.", "Belajar.", "Menciptakan."], cols = ["#fff", EM, AMB];
+  for (let k = 0; k < 3; k++){
+    const a = eOut5(prog(T, k * 1.5, k * 1.5 + .6)); const y = CY - 215 + k * 128;
+    text(words[k], CX, y, { size: 124, weight: 800, spacing: -4, alpha: a * (1 - prog(T, 6.4, 7.0)), color: cols[k], glow: k ? 40 : 0, glowColor: cols[k], blur: (1 - a) * 16 });
+  }
+  const u = eOut(prog(T, 4.9, 5.9)); ecg(CX - 520, CX + 520, CY + 330, 60, 380, -t * 80, u * (1 - prog(T, 6.4, 7)));
+  const a2 = eOut(prog(T, 5.0, 6.0)) * (1 - prog(T, 6.6, 7.1));
+  text("Wayyuh AI  +  E.B.I.S.I  +  intelligence.7mit", CX, CY + 215, { size: 44, weight: 700, font: BODY, alpha: a2, spacing: 2 });
+}
+function sceneG(t){   // 41–48 : end card
+  const T = t - 41; background(t, 1); cover(IMG.padar, .22, 1.08 + .02 * T, .5, .5); ctx.fillStyle = "rgba(2,8,6,.55)"; ctx.fillRect(0, 0, W, H); particles(t, .8, .6);
+  const p = eOut5(prog(T, 0, 1)); drawW(CX, CY - 250, 150 * (.85 + .15 * p), 1, { t, glow: 34, tileAlpha: p });
+  text("WAYYUH AI", CX, CY - 80, { size: 170, weight: 800, spacing: 6, alpha: eOut(prog(T, .3, 1.1)), glow: 30, blur: (1 - eOut(prog(T, .3, 1.1))) * 14 });
+  text("TELAH DILUNCURKAN", CX, CY + 30, { size: 40, weight: 700, font: BODY, spacing: 20, alpha: eOut(prog(T, .8, 1.5)), color: EM, glow: 16 });
+  const ua = eOut(prog(T, 1.4, 2.2)); ctx.save(); ctx.globalAlpha = ua; ctx.font = `700 64px ${BODY}`; ctx.textAlign = "center"; const uw = ctx.measureText("ai.wayyuh.org").width + 90;
+  ctx.fillStyle = rgba(EM, .12); roundRect(CX - uw / 2, CY + 100, uw, 100, 50); ctx.fill(); ctx.strokeStyle = rgba(EM, .7); ctx.lineWidth = 2.5; ctx.shadowColor = EM; ctx.shadowBlur = 24; roundRect(CX - uw / 2, CY + 100, uw, 100, 50); ctx.stroke(); ctx.restore();
+  text("ai.wayyuh.org", CX, CY + 152, { size: 64, weight: 700, font: BODY, alpha: ua });
+  text("ebisi.wayyuh.org   ·   intelligence.7mit.org", CX, CY + 250, { size: 32, weight: 500, font: BODY, alpha: eOut(prog(T, 2.2, 3)) * .85, spacing: 1, color: "#CFE6DA" });
+  text("Dibuat oleh United Wayyuh  ·  Powered by intelligence.7mit", CX, CY + 305, { size: 26, weight: 400, font: BODY, alpha: eOut(prog(T, 2.8, 3.6)) * .6, spacing: 1 });
+}
+window.draw = function(t){
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; ctx.filter = "none";
+  if (t < 5.2) sceneA(t);
+  else if (t < 12) sceneB(t);
+  else if (t < 19.5) sceneD(t);
+  else if (t < 23.5) sceneE1(t);
+  else if (t < 27.5) sceneE2(t);
+  else if (t < 30.5) sceneE3(t);
+  else if (t < 33.5) sceneE4(t);
+  else if (t < 41) sceneF(t);
+  else sceneG(t);
+  // short cross-dissolve flashes on the beat cuts
+  for (const c of [19.5, 23.5, 27.5, 30.5, 33.5, 41]){ const d = t - c; if (d >= 0 && d < .18){ ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = `rgba(120,255,210,${.35 * (1 - d / .18)})`; ctx.fillRect(0, 0, W, H); ctx.restore(); } }
+  finish(t, 1.2, 1.4);
+};
+window.ready = (async () => {
+  await Promise.all([document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 40px "DM Sans"'), document.fonts.load('500 40px "DM Sans"'), document.fonts.load('400 40px "DM Sans"')]);
+  await document.fonts.ready;
+  for (const n of names) IMG[n] = await loadImg(`assets/${n}.jpg`);
+  IMG.home = await loadImg("assets/ui-home.png"); IMG.chat = await loadImg("assets/ui-chat.png");
+  return Object.entries(IMG).filter(([, v]) => !v).map(([k]) => k);
+})();
+</script></body></html>
