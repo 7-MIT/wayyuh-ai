@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><title>Wayyuh AI · Update 1.2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Sans:wght@400;500;700&display=swap">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block;width:1920px;height:1080px}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script>
+/* Wayyuh AI trailer: a deterministic canvas timeline. window.draw(t) renders any time t (seconds); the renderer
+   steps t frame by frame, so the result does not depend on machine speed. 48 s, 120 BPM (a beat = 0.5 s). */
+"use strict";
+const W = 1920, H = 1080, DUR = 30;
+const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+const DISPLAY = '"Bricolage Grotesque","Plus Jakarta Sans",system-ui,sans-serif', BODY = '"DM Sans",Inter,system-ui,sans-serif';
+const EM = "#4DEFB0", LIME = "#B6F25A", AMB = "#FFC857", TEAL = "#46AAD2";
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const prog = (t, a, b) => clamp((t - a) / (b - a));
+const eOut = x => 1 - Math.pow(1 - x, 3), eOut5 = x => 1 - Math.pow(1 - x, 5), eIn = x => x * x * x;
+const eIO = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+const eExpo = x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x);
+const lerp = (a, b, k) => a + (b - a) * k;
+function rng(seed){ let s = seed >>> 0; return () => { s = (s + 0x6D2B79F5) >>> 0; let t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const IMG = {}; const names = ["bromo","raja","padar","bratan","prambanan","monas","tegal","toba","borobudur","rinjani"];
+function loadImg(src){ return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
+
+/* ---------- reusable layers ---------- */
+const noise = document.createElement("canvas"); noise.width = noise.height = 256;
+(function(){ const n = noise.getContext("2d"), d = n.createImageData(256, 256), r = rng(7); for (let i = 0; i < d.data.length; i += 4){ const v = r() * 255; d.data[i] = d.data[i+1] = d.data[i+2] = v; d.data[i+3] = 255; } n.putImageData(d, 0, 0); })();
+const P = (() => { const r = rng(11), a = []; for (let i = 0; i < 260; i++) a.push({ x: r() * W, y: r() * H, z: .3 + r() * .9, ph: r() * 6.28, sp: .3 + r() * .9, c: r() < .62 ? EM : (r() < .6 ? AMB : "#ffffff") }); return a; })();
+
+function cover(img, alpha, scale, ox, oy, dx = 0, dy = 0){   // draw an image "object-fit: cover" with zoom and pan
+  if (!img) return;
+  const s = Math.max(W / img.width, H / img.height) * scale, w = img.width * s, h = img.height * s;
+  ctx.globalAlpha = alpha; ctx.drawImage(img, (W - w) * ox + dx, (H - h) * oy + dy, w, h); ctx.globalAlpha = 1;
+}
+function glowCircle(x, y, r, color, a){ const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, color); g.addColorStop(1, "rgba(0,0,0,0)"); ctx.globalAlpha = a; ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); ctx.globalAlpha = 1; }
+function rgba(hex, a){ const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function text(str, x, y, o = {}){
+  const { size = 80, weight = 800, font = DISPLAY, color = "#fff", align = "center", alpha = 1, spacing = 0, glow = 0, glowColor = EM, blur = 0, base = "middle" } = o;
+  if (alpha <= 0.001) return;
+  ctx.save(); ctx.globalAlpha = alpha; ctx.font = `${weight} ${size}px ${font}`; ctx.textAlign = align; ctx.textBaseline = base;
+  ctx.letterSpacing = spacing + "px"; if (blur) ctx.filter = `blur(${blur}px)`;
+  if (glow){ ctx.shadowColor = glowColor; ctx.shadowBlur = glow; }
+  ctx.fillStyle = color; ctx.fillText(str, x, y); ctx.restore();
+}
+function roundRect(x, y, w, h, r){ ctx.beginPath(); ctx.roundRect(x, y, w, h, r); }
+function background(t, tint = 1){
+  ctx.fillStyle = "#04080A"; ctx.fillRect(0, 0, W, H);
+  const k = Math.sin(t * .35);
+  glowCircle(W * (.28 + .06 * k), H * .3, 900, "rgba(24,150,104,.55)", .32 * tint);
+  glowCircle(W * (.74 - .05 * k), H * .72, 820, "rgba(255,184,64,.40)", .16 * tint);
+  glowCircle(W * .5, H * .96, 900, "rgba(40,140,200,.45)", .20 * tint);
+}
+function particles(t, amount = 1, speed = 1, boost = 0){
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < P.length * amount; i++){
+    const p = P[i], x = (p.x + Math.sin(t * .2 * p.sp * speed + p.ph) * 60 * p.z) % W, y = ((p.y - t * 14 * p.z * speed) % H + H) % H;
+    const tw = .45 + .55 * Math.sin(t * 1.6 * p.sp + p.ph), r = (1 + p.z * 2.6) * (1 + boost);
+    ctx.fillStyle = rgba(p.c === "#ffffff" ? "#ffffff" : p.c, .55 * tw * p.z); ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+  }
+  ctx.restore();
+}
+function finish(t, fadeIn = 0, fadeOut = 0){   // grain, vignette, letterbox, global fades
+  ctx.save(); ctx.globalCompositeOperation = "overlay"; ctx.globalAlpha = .10;
+  const f = Math.floor(t * 24), r = rng(f * 977 + 3), ox = Math.floor(r() * 256), oy = Math.floor(r() * 256);
+  for (let y = -oy; y < H; y += 256) for (let x = -ox; x < W; x += 256) ctx.drawImage(noise, x, y);
+  ctx.restore();
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * .35, W / 2, H / 2, H * 1.0); v.addColorStop(0, "rgba(0,0,0,0)"); v.addColorStop(1, "rgba(0,0,0,.62)");
+  ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  const bar = (H - W / 2.39) / 2; ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, bar); ctx.fillRect(0, H - bar, W, bar);
+  if (fadeIn > 0){ ctx.fillStyle = `rgba(0,0,0,${1 - prog(t, 0, fadeIn)})`; ctx.fillRect(0, 0, W, H); }
+  if (fadeOut > 0){ ctx.fillStyle = `rgba(0,0,0,${prog(t, DUR - fadeOut, DUR)})`; ctx.fillRect(0, 0, W, H); }
+}
+function flare(x, y, len, a, color = "#9CFFE0"){   // anamorphic streak
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  const g = ctx.createLinearGradient(x - len, 0, x + len, 0); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(.5, rgba(color, a)); g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g; ctx.fillRect(x - len, y - 3, len * 2, 6);
+  glowCircle(x, y, len * .35, rgba(color, .9), a * .7); ctx.restore();
+}
+/* ---------- the W mark ---------- */
+const WP = [[13,21],[22.5,45],[32,27],[41.5,45],[51,21]];
+function wLen(){ let L = 0; for (let i = 1; i < WP.length; i++) L += Math.hypot(WP[i][0]-WP[i-1][0], WP[i][1]-WP[i-1][1]); return L; }
+const WL = wLen();
+function drawW(cx, cy, size, p, o = {}){   // p: 0..1 draw progress
+  const s = size / 64; ctx.save(); ctx.translate(cx - 32 * s, cy - 32 * s); ctx.scale(s, s);
+  ctx.lineCap = "round"; ctx.lineJoin = "round";
+  if (o.tile !== false){
+    const g = ctx.createLinearGradient(6, 0, 58, 64); g.addColorStop(0, "#052A1F"); g.addColorStop(.62, "#0E9F6E"); g.addColorStop(1, "#B6F35A");
+    ctx.globalAlpha = o.tileAlpha ?? 1; ctx.fillStyle = g; roundRect(0, 0, 64, 64, 19); ctx.fill(); ctx.globalAlpha = 1;
+  }
+  ctx.shadowColor = o.glowColor || EM; ctx.shadowBlur = (o.glow ?? 24) / s; ctx.strokeStyle = "#fff"; ctx.lineWidth = 5.2;
+  ctx.setLineDash([WL * p, WL * 2]); ctx.beginPath(); WP.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.stroke(); ctx.setLineDash([]);
+  if (p > .98){ ctx.shadowBlur = 14 / s; ctx.fillStyle = AMB; ctx.beginPath(); ctx.arc(51, 21, 3.6 + .9 * Math.sin((o.t || 0) * 3), 0, 6.283); ctx.fill(); }
+  ctx.restore();
+}
+/* ---------- ECG line ---------- */
+function ecgY(x, period, amp){ const u = ((x % period) + period) % period / period; const pts = [[0,0],[.34,0],[.38,-.14],[.42,0],[.47,0],[.5,.35],[.54,-1],[.58,.6],[.62,0],[.7,0],[.76,-.2],[.82,0],[1,0]];
+  for (let i = 1; i < pts.length; i++) if (u <= pts[i][0]){ const a = pts[i-1], b = pts[i], k = (u - a[0]) / (b[0] - a[0]); return lerp(a[1], b[1], k) * amp; } return 0; }
+function ecg(x0, x1, cy, amp, period, shift, a = 1){
+  ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+  const g = ctx.createLinearGradient(x0, 0, x1, 0); g.addColorStop(0, rgba(EM, 0)); g.addColorStop(.2, rgba(EM, a)); g.addColorStop(.8, rgba(AMB, a)); g.addColorStop(1, rgba(AMB, 0));
+  ctx.strokeStyle = g; ctx.lineWidth = 5; ctx.shadowColor = EM; ctx.shadowBlur = 30; ctx.beginPath();
+  for (let x = x0; x <= x1; x += 3){ const y = cy + ecgY(x - shift, period, amp); x === x0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
+  ctx.stroke(); ctx.restore();
+}
+/* ---------- UI screens ---------- */
+function screen(img, cx, cy, w, rot, a, extra = {}){
+  if (!img || a <= 0) return;
+  const h = w * img.height / img.width; ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+  if (extra.skew) ctx.transform(1, extra.skew[1], extra.skew[0], 1, 0, 0);
+  ctx.globalAlpha = a; ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 90; ctx.shadowOffsetY = 40;
+  roundRect(-w / 2, -h / 2, w, h, 26); ctx.fillStyle = "#0b1210"; ctx.fill(); ctx.shadowColor = "transparent";
+  ctx.save(); roundRect(-w / 2, -h / 2, w, h, 26); ctx.clip(); ctx.drawImage(img, -w / 2, -h / 2, w, h);
+  const sh = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2); sh.addColorStop(0, "rgba(255,255,255,.10)"); sh.addColorStop(.35, "rgba(255,255,255,0)"); ctx.fillStyle = sh; ctx.fillRect(-w / 2, -h / 2, w, h); ctx.restore();
+  ctx.strokeStyle = "rgba(190,255,225,.28)"; ctx.lineWidth = 2; roundRect(-w / 2, -h / 2, w, h, 26); ctx.stroke(); ctx.restore();
+}
+function crop(img, sx, sy, sw, sh, cx, cy, scale, rot, a){   // a floating UI snippet
+  if (!img || a <= 0) return; const w = sw * scale, h = sh * scale;
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.globalAlpha = a; ctx.shadowColor = "rgba(0,0,0,.65)"; ctx.shadowBlur = 60; ctx.shadowOffsetY = 28;
+  roundRect(-w / 2, -h / 2, w, h, 24); ctx.fillStyle = "#0b1210"; ctx.fill(); ctx.shadowColor = "transparent";
+  ctx.save(); roundRect(-w / 2, -h / 2, w, h, 24); ctx.clip(); ctx.drawImage(img, sx, sy, sw, sh, -w / 2, -h / 2, w, h); ctx.restore();
+  ctx.strokeStyle = "rgba(190,255,225,.35)"; ctx.lineWidth = 2; roundRect(-w / 2, -h / 2, w, h, 24); ctx.stroke(); ctx.restore();
+}
+function shake(t, amp){ const r = rng(Math.floor(t * 60) + 5); ctx.translate((r() - .5) * amp, (r() - .5) * amp); }
+
+/* ================= Update 1.2 ad: 30 s, 120 BPM ================= */
+const CX = W / 2, CY = H / 2;
+const FAST_C = AMB, PRO_C = EM;
+function gradText(str, x, y, size, c0, c1, c2, o = {}){
+  ctx.save(); ctx.globalAlpha = o.alpha ?? 1; ctx.font = `800 ${size}px ${DISPLAY}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.letterSpacing = (o.spacing || 0) + "px";
+  const w = ctx.measureText(str).width, g = ctx.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+  const sh = o.shift || 0; g.addColorStop(0, c0); g.addColorStop(clamp(.5 + sh * .3, .05, .95), c1); g.addColorStop(1, c2);
+  if (o.blur) ctx.filter = `blur(${o.blur}px)`; ctx.shadowColor = o.glow || c1; ctx.shadowBlur = o.glowSize ?? 40; ctx.fillStyle = g; ctx.fillText(str, x, y); ctx.restore();
+}
+function sceneS1(t){   // 0–3 : a pulse
+  background(t, .35 * eOut(prog(t, 0, 1.5))); particles(t, .5, .6);
+  const p = prog(t, .2, 2.4), x1 = lerp(CX - 640, CX + 640, eIO(p)), collapse = prog(t, 2.3, 3.0);
+  ecg(lerp(CX - 640, CX - 20, eIn(collapse)), lerp(x1, CX + 20, eIn(collapse)), CY + 10, 150 * (1 - collapse * .8), 520, -t * 40, 1 - collapse * .3);
+  text("WAYYUH AI", CX, CY - 250, { size: 44, weight: 700, font: BODY, spacing: 22, alpha: eOut(prog(t, .8, 1.6)) * (1 - prog(t, 2.5, 2.9)), color: EM, glow: 20 });
+  if (t > 2.4){ const f = prog(t, 2.4, 3.0); ctx.save(); ctx.globalCompositeOperation = "lighter"; glowCircle(CX, CY + 10, 40 + 1200 * f * f, "#ffffff", .95 * f * f); ctx.restore(); }
+}
+function sceneS2(t){   // 3–6 : UPDATE 1.2
+  const T = t - 3; background(t, 1.4 - .4 * eOut(prog(T, 0, 1.5))); particles(t, 1, .8, .5 * (1 - prog(T, 0, 1.2)));
+  ctx.save(); shake(t, 34 * Math.pow(1 - clamp(T / .8), 2));
+  for (let i = 0; i < 3; i++){ const p = prog(T, i * .12, i * .12 + 1.5), r = eOut5(p) * 1500; ctx.strokeStyle = rgba(i % 2 ? AMB : EM, (1 - p) * .8); ctx.lineWidth = 14 * (1 - p) + 2; ctx.beginPath(); ctx.arc(CX, CY, r, 0, 6.283); ctx.stroke(); }
+  if (T < 1.3) flare(CX, CY, 1000 * (1 - prog(T, 0, 1.3)), 1 - prog(T, 0, 1.3));
+  const sc = lerp(1.35, 1, eExpo(prog(T, 0, .7))), a = eOut(prog(T, .05, .5));
+  ctx.translate(CX, CY - 10); ctx.scale(sc, sc); ctx.translate(-CX, -(CY - 10));
+  gradText("1.2", CX, CY - 10, 560, EM, LIME, AMB, { alpha: a, spacing: -16, shift: Math.sin(T * 1.4), blur: (1 - a) * 18, glowSize: 70 });
+  ctx.restore();
+  text("UPDATE", CX, CY - 290, { size: 52, weight: 700, font: BODY, spacing: 34, alpha: eOut(prog(T, .5, 1.1)), color: "#EAF5EE", glow: 18 });
+  text("Wayyuh AI", CX, CY + 250, { size: 62, weight: 700, alpha: eOut(prog(T, 1.2, 1.9)), spacing: -1 });
+  drawW(CX - 215, CY + 250, 64, 1, { t, glow: 20, tileAlpha: eOut(prog(T, 1.2, 1.9)) });
+  if (T > 1.6 && T < 2.8) flare(lerp(CX - 380, CX + 380, prog(T, 1.6, 2.8)), CY - 10, 380, .8 * Math.sin(Math.PI * prog(T, 1.6, 2.8)));
+}
+function streaks(x0, y0, w, h, t, color, speed){
+  ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, w, h); ctx.clip(); ctx.globalCompositeOperation = "lighter";
+  const r = rng(21);
+  for (let i = 0; i < 46; i++){
+    const y = y0 + r() * h, len = 120 + r() * 360, sp = (.6 + r() * 1.4) * speed, x = x0 + (((r() * (w + len) - t * 900 * sp) % (w + len)) + (w + len)) % (w + len) - len;
+    const g = ctx.createLinearGradient(x, 0, x + len, 0); g.addColorStop(0, rgba(color, 0)); g.addColorStop(1, rgba(color, .55));
+    ctx.fillStyle = g; ctx.fillRect(x, y, len, 2 + r() * 3);
+  }
+  ctx.restore();
+}
+function rings(cx, cy, t, color){
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (let i = 0; i < 5; i++){
+    const r = 70 + i * 62, rot = t * (.35 - i * .06) * (i % 2 ? -1 : 1);
+    ctx.strokeStyle = rgba(color, .55 - i * .08); ctx.lineWidth = 2.5; ctx.setLineDash([22 + i * 14, 18 + i * 8]); ctx.lineDashOffset = -rot * 160;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 6.283); ctx.stroke();
+  }
+  ctx.setLineDash([]); glowCircle(cx, cy, 160, rgba(color, .9), .6); ctx.restore();
+}
+function modeCard(cx, cy, w, h, a, o){   // o: {name, color, desc, tag, draw}
+  if (a <= 0) return;
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(cx, cy);
+  ctx.shadowColor = "rgba(0,0,0,.7)"; ctx.shadowBlur = 80; ctx.shadowOffsetY = 30; roundRect(-w / 2, -h / 2, w, h, 34); ctx.fillStyle = "#08110E"; ctx.fill(); ctx.shadowColor = "transparent";
+  ctx.save(); roundRect(-w / 2, -h / 2, w, h, 34); ctx.clip(); ctx.translate(-w / 2, -h / 2); o.draw(0, 0, w, h); ctx.restore();
+  ctx.shadowColor = o.color; ctx.shadowBlur = 40; ctx.strokeStyle = rgba(o.color, .75); ctx.lineWidth = 3; roundRect(-w / 2, -h / 2, w, h, 34); ctx.stroke(); ctx.shadowBlur = 0;
+  ctx.restore();
+  text(o.name, cx, cy - 20, { size: 150, weight: 800, alpha: a, spacing: 2, color: "#fff", glow: 46, glowColor: o.color });
+  text(o.tag, cx, cy - 138, { size: 30, weight: 700, font: BODY, spacing: 14, alpha: a, color: o.color });
+  text(o.desc[0], cx, cy + 92, { size: 38, weight: 500, font: BODY, alpha: a * .92, color: "#E3F1E9" });
+  text(o.desc[1], cx, cy + 140, { size: 38, weight: 500, font: BODY, alpha: a * .92, color: "#E3F1E9" });
+}
+function sceneS3(t){   // 6–10 : AI Modes
+  const T = t - 6; background(t, 1); particles(t, .6, .8);
+  const titleY = lerp(CY, 215, eIO(prog(T, .9, 1.7))), titleS = lerp(210, 92, eIO(prog(T, .9, 1.7)));
+  const ta = eOut5(prog(T, 0, .6));
+  text("AI Modes", CX, titleY, { size: titleS, weight: 800, spacing: -3, alpha: ta, glow: 36, blur: (1 - ta) * 16 });
+  const pa = eOut5(prog(T, 1.1, 1.9)), pb = eOut5(prog(T, 1.6, 2.4)), yy = CY + 90;
+  modeCard(CX - 480, yy + (1 - pa) * 60, 880, 470, pa, { name: "FAST", tag: "⚡", color: FAST_C, desc: ["Jawaban cepat untuk", "keseharian"], draw: (x, y, w, h) => { streaks(x, y, w, h, t, FAST_C, 1); glowCircle(x + w * .5, y + h * .5, 340, rgba(FAST_C, .5), .35); } });
+  modeCard(CX + 480, yy + (1 - pb) * 60, 880, 470, pb, { name: "PRO", tag: "✦", color: PRO_C, desc: ["Lebih teliti untuk soal sulit", "dan analisis mendalam"], draw: (x, y, w, h) => { rings(x + w * .5, y + h * .5, t, PRO_C); } });
+}
+function sceneS4(t){   // 10–15 : the real UI
+  const T = t - 10; background(t, .9); particles(t, .7, .7);
+  const p = eOut(prog(T, 0, 1.1)), push = 1.02 + .05 * (T / 5), swap = prog(T, 2.4, 2.9);
+  ctx.save(); ctx.translate(CX, CY); ctx.scale(push, push); ctx.translate(-CX, -CY);
+  screen(IMG.uifast, CX + 320, CY + 10, 1180, -.04 * (1 - p) - .016, p);
+  if (swap > 0){ ctx.save(); ctx.globalAlpha = swap; screen(IMG.uipro, CX + 320, CY + 10, 1180, -.016, 1); ctx.restore(); }
+  // callout chips that point at the real menu
+  const chip = (label, c, x, y, a) => { if (a <= 0) return; ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y + (1 - a) * 24); ctx.font = `800 40px ${DISPLAY}`; const w = ctx.measureText(label).width + 76;
+    ctx.shadowColor = c; ctx.shadowBlur = 36; ctx.fillStyle = "rgba(6,12,10,.92)"; roundRect(-w / 2, -38, w, 76, 38); ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.stroke(); ctx.shadowBlur = 0;
+    ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(label, 0, 2); ctx.restore(); };
+  chip("⚡ Fast", FAST_C, CX + 20, CY + 105, eOut(prog(T, .9, 1.5)) * (1 - prog(T, 2.5, 2.9) * .55));
+  chip("✦ Pro", PRO_C, CX + 20, CY + 190, eOut(prog(T, 1.3, 1.9)) * (.55 + .45 * prog(T, 2.5, 2.9)));
+  ctx.restore();
+  const a = eOut(prog(T, .2, .9)) * (1 - prog(T, 4.6, 5));
+  text("One tap.", 150, CY - 70, { size: 96, weight: 800, align: "left", alpha: a, spacing: -3, glow: 30, blur: (1 - a) * 10 });
+  const b = eOut(prog(T, .6, 1.3)) * (1 - prog(T, 4.6, 5));
+  text("Fast or Pro.", 150, CY + 40, { size: 96, weight: 800, align: "left", alpha: b, spacing: -3, glow: 30, color: EM, blur: (1 - b) * 10 });
+}
+const NET = (() => { const r = rng(5), pts = []; for (let i = 0; i < 90; i++){ const th = r() * 6.283, ph = Math.acos(2 * r() - 1), rad = 380 + r() * 360; pts.push([rad * Math.sin(ph) * Math.cos(th), rad * Math.cos(ph) * .8, rad * Math.sin(ph) * Math.sin(th), r()]); }
+  const edges = []; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++){ const d = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1], pts[i][2] - pts[j][2]); if (d < 330) edges.push([i, j, d, r()]); } return { pts, edges }; })();
+function sceneS5(t){   // 15–22 : Enhanced Intelligence
+  const T = t - 15; background(t, 1.1);
+  const ignite = eIO(prog(T, 3.2, 4.4)), rot = T * .22 + .6, cs = Math.cos(rot), sn = Math.sin(rot), f = 1300;
+  const proj = P3 => { const x = P3[0] * cs - P3[2] * sn, z = P3[0] * sn + P3[2] * cs + 900, k = f / (f + z); return [CX + x * k, CY + P3[1] * k, k]; };
+  const grow = eOut(prog(T, 0, 1.6));
+  ctx.save(); ctx.globalCompositeOperation = "lighter";
+  for (const [i, j, d, r] of NET.edges){
+    if (r > grow) continue; const a = proj(NET.pts[i]), b = proj(NET.pts[j]);
+    const al = (.10 + .22 * ignite) * Math.min(a[2], b[2]) * 1.4;
+    ctx.strokeStyle = rgba(r > .5 ? EM : AMB, al); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+    const ph = ((T * (.5 + r * .9) + r * 7) % 1), px = lerp(a[0], b[0], ph), py = lerp(a[1], b[1], ph);   // a signal travelling along the edge
+    ctx.fillStyle = rgba(r > .5 ? "#BFFFE6" : "#FFE2A6", (.35 + .6 * ignite) * Math.min(a[2], b[2]) * 1.3); ctx.beginPath(); ctx.arc(px, py, 2.4 + 2 * ignite, 0, 6.283); ctx.fill();
+  }
+  for (const P3 of NET.pts){ const q = proj(P3), tw = .6 + .4 * Math.sin(T * 2 + P3[3] * 9); glowCircle(q[0], q[1], (12 + 22 * ignite) * q[2] * 1.6, rgba(P3[3] > .5 ? EM : AMB, 1), (.35 + .5 * ignite) * tw); }
+  ctx.restore();
+  const v = ctx.createRadialGradient(CX, CY, 120, CX, CY, 760); v.addColorStop(0, "rgba(4,8,10,.78)"); v.addColorStop(1, "rgba(4,8,10,0)"); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+  const a1 = eOut5(prog(T, 1.0, 1.8)), a2 = eOut5(prog(T, 1.4, 2.2)), out = 1 - prog(T, 6.5, 7);
+  text("Enhanced", CX, CY - 100, { size: 190, weight: 800, spacing: -6, alpha: a1 * out, glow: 40, blur: (1 - a1) * 18 });
+  gradText("Intelligence", CX, CY + 85, 190, EM, LIME, AMB, { alpha: a2 * out, spacing: -6, shift: Math.sin(T * 1.2), blur: (1 - a2) * 18 });
+  text("Lebih cerdas di setiap jawaban.", CX, CY + 245, { size: 42, weight: 500, font: BODY, alpha: eOut(prog(T, 3.0, 3.8)) * out, color: "#D8EDE2" });
+  text("powered by intelligence.7mit", CX, CY + 305, { size: 28, weight: 700, font: BODY, spacing: 8, alpha: eOut(prog(T, 4.2, 5)) * out * .85, color: EM });
+}
+function sceneS6(t){   // 22–30 : end card
+  const T = t - 22; background(t, 1); cover(IMG.padar, .24, 1.08 + .02 * T, .5, .5); ctx.fillStyle = "rgba(2,8,6,.55)"; ctx.fillRect(0, 0, W, H); particles(t, .8, .6);
+  const p = eOut5(prog(T, 0, 1)); drawW(CX, CY - 275, 140 * (.85 + .15 * p), 1, { t, glow: 34, tileAlpha: p });
+  text("WAYYUH AI", CX, CY - 120, { size: 150, weight: 800, spacing: 6, alpha: eOut(prog(T, .3, 1.1)), glow: 30, blur: (1 - eOut(prog(T, .3, 1.1))) * 14 });
+  gradText("UPDATE 1.2", CX, CY - 5, 96, EM, LIME, AMB, { alpha: eOut(prog(T, .8, 1.5)), spacing: 8, glowSize: 30 });
+  text("Fast  ·  Pro  ·  Enhanced Intelligence", CX, CY + 85, { size: 40, weight: 500, font: BODY, alpha: eOut(prog(T, 1.4, 2.2)) * .92, color: "#E3F1E9", spacing: 1 });
+  const ua = eOut(prog(T, 2.0, 2.8)); ctx.save(); ctx.globalAlpha = ua; ctx.font = `700 60px ${BODY}`; ctx.textAlign = "center"; const uw = ctx.measureText("ai.wayyuh.org").width + 90;
+  ctx.fillStyle = rgba(EM, .12); roundRect(CX - uw / 2, CY + 150, uw, 96, 48); ctx.fill(); ctx.strokeStyle = rgba(EM, .7); ctx.lineWidth = 2.5; ctx.shadowColor = EM; ctx.shadowBlur = 24; roundRect(CX - uw / 2, CY + 150, uw, 96, 48); ctx.stroke(); ctx.restore();
+  text("ai.wayyuh.org", CX, CY + 198, { size: 60, weight: 700, font: BODY, alpha: ua });
+  text("Tersedia sekarang", CX, CY + 282, { size: 34, weight: 500, font: BODY, alpha: eOut(prog(T, 2.8, 3.5)) * .9, color: EM, spacing: 4 });
+  text("Dibuat oleh United Wayyuh  ·  Powered by intelligence.7mit", CX, CY + 330, { size: 24, weight: 400, font: BODY, alpha: eOut(prog(T, 3.2, 4)) * .6, spacing: 1 });
+}
+window.draw = function(t){
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; ctx.filter = "none";
+  if (t < 3) sceneS1(t); else if (t < 6) sceneS2(t); else if (t < 10) sceneS3(t); else if (t < 15) sceneS4(t); else if (t < 22) sceneS5(t); else sceneS6(t);
+  for (const c of [3, 6, 10, 15, 22]){ const d = t - c; if (d >= 0 && d < .16){ ctx.save(); ctx.globalCompositeOperation = "lighter"; ctx.fillStyle = `rgba(120,255,210,${.32 * (1 - d / .16)})`; ctx.fillRect(0, 0, W, H); ctx.restore(); } }
+  finish(t, .9, 1.3);
+};
+window.ready = (async () => {
+  await Promise.all([document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 40px "DM Sans"'), document.fonts.load('500 40px "DM Sans"'), document.fonts.load('400 40px "DM Sans"')]);
+  await document.fonts.ready;
+  IMG.padar = await loadImg("assets/padar.jpg"); IMG.uifast = await loadImg("assets/ui-fast.png"); IMG.uipro = await loadImg("assets/ui-pro.png");
+  return Object.entries(IMG).filter(([, v]) => !v).map(([k]) => k);
+})();
+</script></body></html>
