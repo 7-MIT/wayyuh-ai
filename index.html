@@ -18,7 +18,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Wayyuh AI Aurora
    Layout: persistent sidebar | chat column (thread + fixed composer) | optional workspace panel.
@@ -2000,6 +2000,138 @@ html.focus .hx-hero{justify-content:center;padding-top:clamp(40px,10vh,110px)}
 .ex-groups{display:grid;grid-template-columns:1fr;gap:18px}
 @media (hover:none){.fw i{box-shadow:none;width:6px;height:6px}}
 
+
+/* ===================== Wayyuh Pulse · identity layer =====================
+   Emerald + amber on ink (dark) or mint paper (light). Pill shapes, a living mesh background,
+   a cursor spotlight, a spinning focus ring on the composer and spotlight cards. Pure CSS plus a few
+   lines of pointer tracking. Everything animated is disabled under prefers-reduced-motion. */
+@property --wy-a{syntax:"<angle>";inherits:false;initial-value:0deg}
+:root{--wy-display:"Bricolage Grotesque","Plus Jakarta Sans",ui-sans-serif,system-ui,sans-serif;--wy-body:"DM Sans","Inter",ui-sans-serif,system-ui,sans-serif;--mx:50vw;--my:30vh;
+  --hx-font:var(--wy-body);--hx-display:var(--wy-display)}
+html:root[data-theme="light"]{
+  --hx-bg:#F1F6F0;--hx-ink:#0B1A13;--hx-ink2:#364A3F;--hx-ink3:#6A7D71;
+  --hx-line:rgba(11,26,19,.09);--hx-line2:rgba(11,26,19,.16);
+  --hx-glass:rgba(255,255,255,.72);--hx-glass-strong:rgba(255,255,255,.92);--hx-card:rgba(255,255,255,.8);--hx-solid:#FFFFFF;
+  --hx-hover:rgba(11,26,19,.05);--hx-press:rgba(11,26,19,.09);
+  --hx-accent:#0A8F62;--hx-accent-ink:#FFFFFF;--hx-accent-soft:rgba(10,143,98,.11);
+  --hx-grad:linear-gradient(95deg,#0A8F62 0%,#5FB233 52%,#E39A0B 100%);
+  --hx-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 12px 30px -18px rgba(11,60,40,.28);
+  --hx-shadow-lg:0 2px 6px rgba(11,26,19,.06),0 32px 70px -30px rgba(11,60,40,.38);
+  --hx-veil:linear-gradient(180deg,rgba(241,246,240,.55),rgba(241,246,240,.86));
+  --wy-m1:rgba(46,204,140,.34);--wy-m2:rgba(255,196,70,.30);--wy-m3:rgba(70,170,210,.22);--wy-dot:rgba(11,26,19,.13);
+  --tl0:#0B3D2E;--tl1:#0A8F62;--tl3:#B6F35A}
+html:root[data-theme="dark"]{
+  --hx-bg:#060C0A;--hx-ink:#EAF5EE;--hx-ink2:rgba(224,240,231,.78);--hx-ink3:rgba(184,208,194,.55);
+  --hx-line:rgba(190,255,225,.08);--hx-line2:rgba(190,255,225,.15);
+  --hx-glass:rgba(14,26,21,.62);--hx-glass-strong:rgba(14,26,21,.9);--hx-card:rgba(14,26,21,.66);--hx-solid:#0D1814;
+  --hx-hover:rgba(190,255,225,.07);--hx-press:rgba(190,255,225,.12);
+  --hx-accent:#4DEFB0;--hx-accent-ink:#04140D;--hx-accent-soft:rgba(77,239,176,.13);
+  --hx-grad:linear-gradient(95deg,#4DEFB0 0%,#B6F25A 52%,#FFC857 100%);
+  --hx-shadow:0 1px 0 rgba(190,255,225,.05) inset,0 16px 40px -20px rgba(0,0,0,.75);
+  --hx-shadow-lg:0 2px 8px rgba(0,0,0,.4),0 36px 80px -30px rgba(0,0,0,.85);
+  --hx-veil:linear-gradient(180deg,rgba(6,12,10,.42),rgba(6,12,10,.8));
+  --wy-m1:rgba(32,201,135,.30);--wy-m2:rgba(255,184,64,.16);--wy-m3:rgba(40,140,200,.22);--wy-dot:rgba(190,255,225,.13);
+  --tl0:#052A1F;--tl1:#0E9F6E;--tl3:#B6F35A}
+html:root[data-theme] body,html:root[data-theme] .shell.home .main{background:var(--hx-bg)}
+
+/* ---- living background: drifting mesh + dot grid + cursor spotlight (replaces the sky scene) ---- */
+.sky:not(.has-photo){background:var(--hx-bg)}
+.sky:not(.has-photo) > :not(.sky-hw){display:none!important}
+.sky:not(.has-photo)::before{content:"";position:absolute;inset:-25%;
+  background:radial-gradient(38% 34% at 22% 26%,var(--wy-m1),transparent 70%),radial-gradient(34% 32% at 78% 22%,var(--wy-m2),transparent 70%),
+    radial-gradient(40% 36% at 62% 82%,var(--wy-m3),transparent 70%);
+  animation:wyDrift 26s ease-in-out infinite alternate;will-change:transform}
+.sky:not(.has-photo)::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(520px circle at var(--mx) var(--my),var(--hx-accent-soft),transparent 70%),radial-gradient(var(--wy-dot) 1px,transparent 1.3px) 0 0/26px 26px;
+  -webkit-mask-image:radial-gradient(75% 65% at 50% 38%,#000 30%,transparent 100%);mask-image:radial-gradient(75% 65% at 50% 38%,#000 30%,transparent 100%)}
+@keyframes wyDrift{0%{transform:translate3d(-3%,-2%,0) rotate(0deg) scale(1)}50%{transform:translate3d(3%,2%,0) rotate(6deg) scale(1.08)}100%{transform:translate3d(-2%,4%,0) rotate(-5deg) scale(1.02)}}
+
+/* ---- nav: a slim floating pill ---- */
+.hx-nav{width:min(920px,calc(100% - 24px));height:56px;border-radius:999px;padding:0 8px 0 10px;
+  -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);border-color:var(--hx-line2)}
+.hx-brand{border-radius:999px}
+.hx-brand span{font-family:var(--wy-display);font-weight:700;font-size:18px;letter-spacing:-.025em}
+.hx-link{border-radius:999px;position:relative;font-weight:600}
+.hx-link::after{content:"";position:absolute;left:50%;bottom:5px;width:0;height:2px;border-radius:2px;background:var(--hx-grad);transform:translateX(-50%);transition:width .3s var(--ease)}
+.hx-link:hover::after{width:46%}
+.hx-icon{border-radius:50%}
+.hx-icon:hover{transform:rotate(-8deg) scale(1.06)}
+
+/* ---- hero ---- */
+.hx-greet{padding:6px 14px 6px 12px;border-radius:999px;background:var(--hx-glass);border:1px solid var(--hx-line);font-weight:600;font-size:14px}
+.hx-dot{position:relative;background:var(--hx-accent)}
+.hx-dot::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--hx-accent);opacity:0;animation:wyPing 2.4s ease-out infinite}
+@keyframes wyPing{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.9);opacity:0}}
+.welcome .hx-title{font-family:var(--wy-display);font-weight:800;letter-spacing:-.045em;line-height:1.02;font-size:clamp(40px,6.4vw,76px)}
+.hx-title .l1{display:inline-block;animation:wyRise .8s var(--spring) backwards}
+html .welcome .hx-title .l2{display:inline-block;background:var(--hx-grad);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;filter:none;animation:wyRise .8s var(--spring) .12s backwards,wyShine 7s linear 1s infinite}
+@keyframes wyShine{to{background-position:-220% 0}}
+@keyframes wyRise{from{opacity:0;transform:translateY(22px) scale(.97);filter:blur(6px)}}
+.hx-chip{border-radius:999px;height:42px;font-weight:600;background:var(--hx-glass);animation:wyRise .7s var(--spring) backwards;
+  position:relative;overflow:hidden;isolation:isolate}
+.hx-quick .hx-chip:nth-child(1){animation-delay:.25s}.hx-quick .hx-chip:nth-child(2){animation-delay:.32s}
+.hx-quick .hx-chip:nth-child(3){animation-delay:.39s}.hx-quick .hx-chip:nth-child(4){animation-delay:.46s}.hx-quick .hx-chip:nth-child(5){animation-delay:.53s}
+.hx-chip::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--hx-grad);opacity:0;transition:opacity .25s}
+.hx-chip:hover{background:var(--hx-glass-strong);border-color:transparent;color:var(--hx-accent-ink);transform:translateY(-3px) rotate(-1deg)}
+.hx-chip:hover::before{opacity:1}.hx-chip:hover svg{color:inherit}
+
+/* ---- composer: glass + a conic ring that spins while focused ---- */
+html .shell.home .composer,html .shell.home .dock.in-hero .composer{border-radius:26px;background:var(--hx-glass-strong);border:1px solid var(--hx-line2);
+  box-shadow:var(--hx-shadow-lg);position:relative;transition:transform .35s var(--spring),box-shadow .3s}
+html .shell.home .composer::before{content:"";position:absolute;inset:-1.5px;border-radius:inherit;padding:1.5px;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:conic-gradient(from var(--wy-a),#4DEFB0,#FFC857,#46AAD2,#4DEFB0);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);animation:wySpin 5s linear infinite}
+html .shell.home .composer:focus-within{border-color:transparent;box-shadow:var(--hx-shadow-lg),0 0 60px -18px var(--hx-accent);transform:translateY(-2px)}
+html .shell.home .composer:focus-within::before{opacity:1}
+@keyframes wySpin{to{--wy-a:360deg}}
+html .shell.home .send{background:var(--hx-grad);color:var(--hx-accent-ink);box-shadow:0 8px 20px -8px var(--hx-accent);transition:transform .3s var(--spring),filter .2s}
+html .shell.home .send:not(:disabled):hover{transform:translateY(-2px) rotate(-10deg) scale(1.06)}
+html .shell.home .send:not(:disabled):active{transform:scale(.9)}
+.tool{border-radius:999px}
+
+/* ---- cards: soft spotlight that follows the pointer ---- */
+.hx-card{border-radius:20px;position:relative;isolation:isolate;overflow:hidden;background:var(--hx-card);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:wyRise .8s var(--spring) .35s backwards;
+  transition:transform .35s var(--spring),border-color .25s,box-shadow .3s;transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.hx-card::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .3s;
+  background:radial-gradient(260px circle at var(--cx,50%) var(--cy,0%),var(--hx-accent-soft),transparent 70%)}
+.hx-card:hover{border-color:var(--hx-line2);box-shadow:var(--hx-shadow-lg)}
+.hx-card:hover::before{opacity:1}
+.hx-card h2 svg{filter:drop-shadow(0 0 8px var(--hx-accent-soft))}
+
+/* ---- chat: user = solid pulse gradient, assistant = open text on a glowing rail ---- */
+.msg.user .bubble{background:var(--hx-grad);background-size:160% 100%;color:var(--hx-accent-ink);border-radius:22px 22px 6px 22px;font-weight:500;
+  box-shadow:0 12px 26px -16px var(--hx-accent)}
+.msg.user .bubble ::selection,.msg.user .bubble::selection{background:rgba(0,0,0,.18)}
+.msg.ai .body{background:transparent;border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;
+  padding:2px 0 2px 18px;margin-left:30px;position:relative}
+.msg.ai .body::before{content:"";position:absolute;left:0;top:4px;bottom:4px;width:3px;border-radius:3px;background:var(--hx-grad);opacity:.55;transition:opacity .3s,box-shadow .3s}
+.msg.ai:hover .body::before,.msg.ai.last .body::before{opacity:1;box-shadow:0 0 14px var(--hx-accent)}
+.msg{animation-name:wyMsg}
+@keyframes wyMsg{from{opacity:0;transform:translateY(14px) scale(.985)}}
+.think-logo .tile{animation:none}
+.shell.home .think-logo{filter:drop-shadow(0 0 10px var(--hx-accent))}
+
+/* ---- shapes elsewhere ---- */
+.tile{border-radius:30%;box-shadow:0 1px 2px rgba(0,30,20,.25),0 8px 18px -8px var(--hx-accent)}
+.hx-brand .tile{transition:transform .5s var(--spring)}.hx-brand:hover .tile{transform:rotate(-12deg) scale(1.1)}
+.splash{background:radial-gradient(60% 50% at 50% 40%,#0E3A2C,#04100B)}
+.splash-mark .tile{box-shadow:0 30px 90px -20px rgba(77,239,176,.65)}
+html .sheet{border-radius:26px}
+html .shell .sidebar,html .shell.home .sidebar{background:var(--hx-solid);border-color:var(--hx-line)}
+html .sb-search kbd,html .new-chat kbd{background:var(--hx-hover);color:inherit;border:1px solid var(--hx-line2)}
+html .btn{border-radius:999px}
+html .new-chat{border-radius:999px;background:var(--hx-grad);color:var(--hx-accent-ink);border:0;font-weight:700}
+html .nav-item,html .shell.home .chat-item{border-radius:14px}
+.hx-foot-brand b{font-family:var(--wy-display)}
+::selection{background:var(--hx-accent-soft)}
+:focus-visible{outline:2px solid var(--hx-accent);outline-offset:2px}
+
+@media (prefers-reduced-motion:reduce){
+  .sky:not(.has-photo)::before,.hx-title .l2,.hx-dot::after,html .shell.home .composer::before{animation:none!important}
+  .hx-chip,.hx-card,.hx-title .l1,.hx-title .l2,.msg{animation:none!important}
+}
+@media (hover:none){.sky:not(.has-photo)::after{background:radial-gradient(var(--wy-dot) 1px,transparent 1.3px) 0 0/26px 26px}.hx-card{transform:none}}
 </style>
 </head>
 <body>
@@ -3888,20 +4020,20 @@ let markN = 0;
 let tileN = 0;
 /* the Wayyuh AI mark: a sun cut by two waves that form an "S", on a dusk-coloured tile (same art as the app icon).
    Colours come from CSS variables so seasonal themes can recolour it. */
-function tile(){
-  const k = ++tileN;
+function wyMark(k, mode){   // Wayyuh Pulse mark: a "W" drawn as one heartbeat line, plus an amber spark
+  const W = "M13 21L22.5 45L32 27L41.5 45L51 21";
+  const flow = mode === "think" ? `<animate attributeName="stroke-dashoffset" values="0;-100" dur="1.5s" repeatCount="indefinite"/>` : "";
+  const draw = mode === "rise" ? `<animate attributeName="stroke-dashoffset" from="100" to="0" begin="0.2s" dur="0.9s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1" keyTimes="0;1"/>` : "";
+  const dash = mode === "think" ? `stroke-dasharray="26 74"` : mode === "rise" ? `stroke-dasharray="100" stroke-dashoffset="100"` : "";
+  const ghost = mode === "think" ? `<path d="${W}" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>` : "";
   return `<svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><defs>` +
-    `<linearGradient id="lb${k}" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--tl0,#1D1452)"/><stop offset=".58" style="stop-color:var(--tl1,#5B41D4)"/><stop offset="1" style="stop-color:var(--tl2,#F39AB4)"/></linearGradient>` +
-    `<radialGradient id="lg${k}" cx="32" cy="34" r="27" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--tl3,#FFC9A8);stop-opacity:.55"/><stop offset="1" style="stop-color:var(--tl3,#FFC9A8);stop-opacity:0"/></radialGradient>` +
-    `<linearGradient id="ls${k}" x1="0" y1="15" x2="0" y2="49" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--tls0,#FFF8EE)"/><stop offset=".5" style="stop-color:var(--tls1,#FFD49B)"/><stop offset="1" style="stop-color:var(--tls2,#FF8A66)"/></linearGradient>` +
-    `<linearGradient id="lh${k}" x1="0" y1="0" x2="0" y2="30" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>` +
-    `<mask id="lm${k}" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/>` +
-    `<path d="M11.5 29.6C19 24 26 24 32 29.6S45 35.2 52.5 29.6M11.5 38.4C19 32.8 26 32.8 32 38.4S45 44 52.5 38.4" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/></mask></defs>` +
-    `<rect width="64" height="64" fill="url(#lb${k})"/><circle cx="32" cy="33" r="27" fill="url(#lg${k})"/>` +
-    `<circle cx="32" cy="32" r="17.5" fill="url(#ls${k})" mask="url(#lm${k})"/>` +
-    `<path fill="#fff" opacity=".95" d="M50.4 10.2l.95 3.25 3.25.95-3.25.95-.95 3.25-.95-3.25-3.25-.95 3.25-.95z"/>` +
-    `<rect width="64" height="30" fill="url(#lh${k})"/></svg>`;
+    `<linearGradient id="lb${k}" x1="6" y1="0" x2="58" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--tl0,#052A1F)"/><stop offset=".62" style="stop-color:var(--tl1,#0E9F6E)"/><stop offset="1" style="stop-color:var(--tl3,#B6F35A)"/></linearGradient>` +
+    `<radialGradient id="lg${k}" cx="46" cy="14" r="30" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#FFE9A8" stop-opacity=".55"/><stop offset="1" stop-color="#FFE9A8" stop-opacity="0"/></radialGradient></defs>` +
+    `<rect width="64" height="64" fill="url(#lb${k})"/><rect width="64" height="64" fill="url(#lg${k})"/>` + ghost +
+    `<path d="${W}" pathLength="100" fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" ${dash}>${flow}${draw}</path>` +
+    `<circle cx="51" cy="21" r="3.6" fill="#FFC857"><animate attributeName="r" values="3.6;4.8;3.6" dur="2.4s" repeatCount="indefinite"/></circle></svg>`;
 }
+function tile(){ return wyMark(++tileN, ""); }
 function mark(){
   const k = ++markN;
   return `<svg class="mark" viewBox="0 0 120 120" aria-hidden="true"><defs>` +
@@ -5438,6 +5570,7 @@ function showPhoto(ph){
   const sky = $("#sky"); if (!sky) return;
   if (cfg.wallpaper && wallpaper) return showWallpaper(sky);
   if (photoShown === "wp"){ photoShown = null; document.documentElement.classList.remove("wp", "wp-dark", "wp-light"); }
+  if (!cfg.wallpaper){ photoShown = null; return; }   // Wayyuh Pulse: the living mesh background replaces the stock photos; only the user's own wallpaper shows
   if (photoShown === ph || !navigator.onLine) return;
   photoShown = ph; const seq = ++photoSeq;
   loadPhoto(ph).then(img => {
@@ -5689,23 +5822,7 @@ Object.assign(ICONS, {
 /* ---------- living logo: waves that move while Wayyuh AI thinks, a sunrise on launch ---------- */
 const WAVE_D = (dy) => { const y = n => (n + dy).toFixed(1);
   return `M-29.5 ${y(29.6)}C-22 ${y(24)} -15 ${y(24)} -9 ${y(29.6)}S4 ${y(35.2)} 11.5 ${y(29.6)}S26 ${y(24)} 32 ${y(29.6)}S45 ${y(35.2)} 52.5 ${y(29.6)}S67 ${y(24)} 73 ${y(29.6)}S86 ${y(35.2)} 93.5 ${y(29.6)}`; };
-function liveTile(mode){   // mode: "think" (waves drift) or "rise" (sun rises, waves draw in once)
-  const k = ++tileN;
-  const anim = mode === "think" ? `<animateTransform attributeName="transform" type="translate" from="0 0" to="41 0" dur="2.6s" repeatCount="indefinite"/>` : "";
-  const draw = mode === "rise" ? `<animate attributeName="stroke-dashoffset" from="140" to="0" begin="0.25s" dur="0.75s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1" keyTimes="0;1"/>` : "";
-  const rise = mode === "rise" ? `<animateTransform attributeName="transform" type="translate" from="0 18" to="0 0" dur="0.8s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1" keyTimes="0;1"/>` : "";
-  const wave = d => mode === "rise" ? `<path d="${d}" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round" stroke-dasharray="140" stroke-dashoffset="140">${draw}</path>` : `<path d="${d}" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="round"/>`;
-  const waves = mode === "rise" ? wave("M11.5 29.6C19 24 26 24 32 29.6S45 35.2 52.5 29.6") + wave("M11.5 38.4C19 32.8 26 32.8 32 38.4S45 44 52.5 38.4") : `<g>${wave(WAVE_D(0))}${wave(WAVE_D(8.8))}${anim}</g>`;
-  return `<svg class="tile" viewBox="0 0 64 64" aria-hidden="true"><defs>` +
-    `<linearGradient id="lb${k}" x1="0" y1="0" x2="0" y2="64" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--tl0,#1D1452)"/><stop offset=".58" style="stop-color:var(--tl1,#5B41D4)"/><stop offset="1" style="stop-color:var(--tl2,#F39AB4)"/></linearGradient>` +
-    `<linearGradient id="ls${k}" x1="0" y1="15" x2="0" y2="49" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--tls0,#FFF8EE)"/><stop offset=".5" style="stop-color:var(--tls1,#FFD49B)"/><stop offset="1" style="stop-color:var(--tls2,#FF8A66)"/></linearGradient>` +
-    `<radialGradient id="lg${k}" cx="32" cy="34" r="27" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--tl3,#FFC9A8);stop-opacity:.55"/><stop offset="1" style="stop-color:var(--tl3,#FFC9A8);stop-opacity:0"/></radialGradient>` +
-    `<mask id="lm${k}" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64"><rect width="64" height="64" fill="#fff"/>${waves}</mask>` +
-    `<clipPath id="lc${k}"><rect width="64" height="64"/></clipPath></defs>` +
-    `<rect width="64" height="64" fill="url(#lb${k})"/><circle cx="32" cy="33" r="27" fill="url(#lg${k})"/>` +
-    `<g clip-path="url(#lc${k})"><circle cx="32" cy="32" r="17.5" fill="url(#ls${k})" mask="url(#lm${k})">${rise}</circle></g>` +
-    `<path fill="#fff" opacity=".95" d="M50.4 10.2l.95 3.25 3.25.95-3.25.95-.95 3.25-.95-3.25-3.25-.95 3.25-.95z"/></svg>`;
-}
+function liveTile(mode){ return wyMark(++tileN, mode); }
 function splashIntro(){
   let seen = false; try{ seen = !!sessionStorage.getItem("wayyuh.splash"); sessionStorage.setItem("wayyuh.splash", "1"); }catch(e){}
   if (seen || reduced) return;
@@ -5811,7 +5928,7 @@ function wireReactions(el, m){
 }
 
 /* ---------- profile: avatar, colours, streak and badges ---------- */
-const AV_COLORS = [["#7466E8", "#C08CF5"], ["#2563D9", "#5FC3E4"], ["#E2572B", "#F6B26B"], ["#1E8F5E", "#7ED6A5"], ["#D2367A", "#F59AB9"], ["#2B2D42", "#6C7593"]];
+const AV_COLORS = [["#0A8F62", "#7AD35A"], ["#2563D9", "#5FC3E4"], ["#E2572B", "#F6B26B"], ["#7466E8", "#C08CF5"], ["#D2367A", "#F59AB9"], ["#2B2D42", "#6C7593"]];
 const AV_EMOJI = ["😎", "🦊", "🐱", "🐼", "🦄", "🐸", "🚀", "⚡", "🌙", "🌻", "🎧", "📚"];
 const avatarCfg = () => store.get("avatar", null) || { emoji: "", color: 0 };
 function avatarHTML(size){
@@ -6424,6 +6541,25 @@ if (/^https?:$/.test(location.protocol) && !/(^|\.)claude(usercontent)?\.(ai|com
 addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; });
 addEventListener("appinstalled", () => toast(t("installed")));
 
+
+/* ================= Wayyuh Pulse motion: cursor spotlight + card tilt ================= */
+(function pulseFx(){
+  if (reduced || !matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+  const root = document.documentElement; let raf = 0, px = 0, py = 0;
+  addEventListener("pointermove", e => {
+    px = e.clientX; py = e.clientY;
+    if (!raf) raf = requestAnimationFrame(() => { raf = 0; root.style.setProperty("--mx", px + "px"); root.style.setProperty("--my", py + "px"); });
+    const c = e.target.closest && e.target.closest(".hx-card, .hx-chip");
+    if (!c) return;
+    const r = c.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    c.style.setProperty("--cx", x + "px"); c.style.setProperty("--cy", y + "px");
+    if (c.classList.contains("hx-card")){
+      c.style.setProperty("--ry", ((x / r.width - .5) * 5).toFixed(2) + "deg");
+      c.style.setProperty("--rx", ((.5 - y / r.height) * 4).toFixed(2) + "deg");
+    }
+  }, { passive: true });
+  addEventListener("pointerout", e => { const c = e.target.closest && e.target.closest(".hx-card"); if (c && !c.contains(e.relatedTarget)){ c.style.setProperty("--rx", "0deg"); c.style.setProperty("--ry", "0deg"); } }, { passive: true });
+})();
 /* ================= boot ================= */
 (function boot(){
   renderIcons();
