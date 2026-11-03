@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Wayyuh AI</title>
-<meta name="description" content="Wayyuh AI, asisten AI buatan Rafael Ibrahim Sutrisno.">
+<meta name="description" content="Wayyuh AI, asisten AI buatan United Wayyuh, powered by intelligence.7mit.">
 <meta name="theme-color" content="#F4F7FD">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Wayyuh AI">
@@ -2120,7 +2120,8 @@ const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(
 // Never put the Gemini key or a service-role key here: it lives in Supabase secrets.
 const SERVER_URL = "https://bjyvahdaebhydzrqsitu.supabase.co/functions/v1/sunday-ai";
 const SERVER_KEY = "";
-const CREATOR = "Rafael Ibrahim Sutrisno";
+const CREATOR = "United Wayyuh";
+const POWERED = "intelligence.7mit";
 
 /* ================= settings ================= */
 const savedCfg = store.get("cfg", {}) || {};
@@ -2230,9 +2231,9 @@ const I18N = {
     f1t: "Cepat & andal", f1d: "Jawaban dalam hitungan detik.", f2t: "Teman belajar", f2d: "Penjelasan sederhana dan latihan soal.",
     f3t: "Bantu berkarya", f3d: "Ubah idemu jadi tulisan, kode, dan rencana.", f4t: "Tersimpan di perangkatmu", f4d: "Riwayat chat disimpan di perangkat ini.",
     sideL: "Berpikir|Menjelajah|Berkarya|Bersama Wayyuh AI", sideR: "Lebih dari|sekadar AI", footTag: "Untuk hari esok|yang lebih cerah",
-    madeBy: "Dibuat oleh {creator}", disclaim: "Wayyuh AI bisa keliru. Periksa info penting.",
+    madeBy: "Dibuat oleh {creator} · Powered by {powered}", disclaim: "Wayyuh AI bisa keliru. Periksa info penting.",
     aboutTitle: "Tentang Wayyuh AI", aboutBody: "Wayyuh AI adalah teman AI keseharianmu. Wayyuh AI bisa menjawab pertanyaan, membantu belajar lewat latihan soal, menulis, membuat kode, dan menyediakan banyak alat lain langsung di chat.",
-    aboutCreator: "Wayyuh AI diciptakan dan dikembangkan oleh {creator}.", aboutLocal: "Riwayat chat, memori, dan pengaturan tersimpan di perangkat ini.",
+    aboutCreator: "Wayyuh AI diciptakan dan dikembangkan oleh {creator}, powered by {powered}.", aboutLocal: "Riwayat chat, memori, dan pengaturan tersimpan di perangkat ini.",
     aboutServer: "Server", srvV1: "versi 1 (chat dasar)", srvV2: "versi 2 (streaming, foto, pencarian web)", srvChecking: "memeriksa…", srvDown: "belum terhubung",
     welcomeTitle: "Ada yang bisa kubantu?", heroL1: "Ada yang bisa", heroL2: "kubantu?", tryThese: "Coba ini", newTag: "Baru",
     heroSub: "Tanya apa saja, unggah foto atau dokumen, atau ketik / untuk alat. Wayyuh AI menemanimu belajar, berkarya, dan menyelesaikan masalah.",
@@ -2244,7 +2245,7 @@ const I18N = {
     placeholder: "Tanya Wayyuh AI…", placeholderLong: "Tanya Wayyuh AI, atau ketik / untuk alat…",
     attach: "Lampirkan foto atau file", webSearch: "Cari web", webSearchOn: "Pencarian web aktif", modelPick: "Pilih mode",
     tools: "Alat Wayyuh AI", voice: "Bicara", voiceStop: "Berhenti merekam", send: "Kirim", stop: "Hentikan",
-    footnote: "Wayyuh AI bisa keliru. Periksa info penting. · Dibuat oleh {creator}",
+    footnote: "Wayyuh AI bisa keliru. Periksa info penting. · Dibuat oleh {creator} · Powered by {powered}",
     offline: "Kamu sedang offline. Pesan bisa dikirim lagi setelah tersambung.",
     toBottom: "Ke pesan terbaru",
     thinking: "{name} sedang berpikir", thinking2: "Menyusun jawaban", thinking3: "Merapikan kata-kata", thinking4: "Sebentar lagi",
@@ -2329,9 +2330,9 @@ const I18N = {
     f1t: "Fast & reliable", f1d: "Answers in seconds.", f2t: "Great for learning", f2d: "Simple explanations and practice quizzes.",
     f3t: "Boost your creativity", f3d: "Turn ideas into writing, code, and plans.", f4t: "Stays on your device", f4d: "Chat history is saved on this device.",
     sideL: "Think|Explore|Create|With Wayyuh AI", sideR: "More|than|just AI", footTag: "Made for a|brighter tomorrow",
-    madeBy: "Made by {creator}", disclaim: "Wayyuh AI can make mistakes. Check important info.",
+    madeBy: "Made by {creator} · Powered by {powered}", disclaim: "Wayyuh AI can make mistakes. Check important info.",
     aboutTitle: "About Wayyuh AI", aboutBody: "Wayyuh AI is your everyday AI companion. It answers questions, helps you study with practice quizzes, writes, codes, and offers many more tools right in the chat.",
-    aboutCreator: "Wayyuh AI was created and developed by {creator}.", aboutLocal: "Chat history, memory, and settings are saved on this device.",
+    aboutCreator: "Wayyuh AI was created and developed by {creator}, powered by {powered}.", aboutLocal: "Chat history, memory, and settings are saved on this device.",
     aboutServer: "Server", srvV1: "version 1 (basic chat)", srvV2: "version 2 (streaming, photos, web search)", srvChecking: "checking…", srvDown: "not connected yet",
     welcomeTitle: "What can I help you with?", heroL1: "What can I help", heroL2: "you with?", tryThese: "Try these", newTag: "New",
     heroSub: "Ask anything, upload a photo or document, or type / for tools. Wayyuh AI helps you learn, create, and get things done.",
@@ -2343,7 +2344,7 @@ const I18N = {
     placeholder: "Ask Wayyuh AI…", placeholderLong: "Ask Wayyuh AI, or type / for tools…",
     attach: "Attach a photo or file", webSearch: "Search web", webSearchOn: "Web search on", modelPick: "Choose mode",
     tools: "Wayyuh AI tools", voice: "Speak", voiceStop: "Stop recording", send: "Send", stop: "Stop",
-    footnote: "Wayyuh AI can make mistakes. Check important info. · Made by {creator}",
+    footnote: "Wayyuh AI can make mistakes. Check important info. · Made by {creator} · Powered by {powered}",
     offline: "You're offline. Messages can be sent again once you reconnect.",
     toBottom: "Jump to latest",
     thinking: "{name} is thinking", thinking2: "Putting the answer together", thinking3: "Polishing the words", thinking4: "Almost there",
@@ -2510,7 +2511,7 @@ function contextBlock({ compact = false, digest = "" } = {}){
   const d = new Date();
   const lines = ["[Konteks dari aplikasi Wayyuh AI. Pakai bila relevan dan jangan diulang ke pengguna.]",
     `Waktu sekarang: ${["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"][d.getDay()]}, ${d.getDate()} ${BULAN_ID[d.getMonth()]} ${d.getFullYear()} pukul ${pad(d.getHours())}.${pad(d.getMinutes())}`,
-    `Kamu Wayyuh AI, diciptakan dan dikembangkan oleh ${CREATOR}; bicarakan dia dengan hormat.`];
+    `Kamu Wayyuh AI, diciptakan dan dikembangkan oleh ${CREATOR}, ditenagai ${POWERED}; bicarakan mereka dengan hormat.`];
   if (cfg.lang === "en") lines.push("The user chose English for the app interface; reply in the language the user writes in.");
   if (cfg.aiName && !/^(wayyuh( ai)?|sunday)$/i.test(cfg.aiName.trim())) lines.push(`Pengguna memanggilmu "${cfg.aiName}". Pakai nama itu saat menyebut dirimu.`);
   const tone = { santai: "Gaya bicara: santai dan akrab, seperti teman.", sopan: "Gaya bicara: sopan dan rapi.", ceria: "Gaya bicara: ceria dan bersemangat, boleh sedikit emoji." }[cfg.tone];
@@ -2525,7 +2526,6 @@ function contextBlock({ compact = false, digest = "" } = {}){
   if (digest) lines.push("Topik sebelumnya di percakapan ini (bagian lama yang tidak ikut dikirim): " + digest);
   if (cfg.name){
     lines.push(`Nama panggilan pengguna: ${cfg.name}`);
-    if (/rafael/i.test(cfg.name)) lines.push(`Pengguna ini menyebut dirinya Rafael, penciptamu. Sapa dia dengan hormat, misalnya "Kak Rafael".`);
   }
   const mem = compact ? memories.slice(-25) : memories.slice(-150);
   if (mem.length){ lines.push("Hal yang kamu ingat tentang pengguna:"); for (const m of mem) lines.push("- " + m.text); }
@@ -3307,7 +3307,7 @@ const AI_PROMPTS = {
   motivasi: () => L("Berikan satu kalimat penyemangat orisinal yang hangat dan singkat untuk hari ini.", "Give one warm, short, original line of encouragement for today.")
 };
 function helpCard(){
-  let h = `<strong>${L("Alat Wayyuh AI", "Wayyuh AI's tools")}</strong><div class='meta'>${L(`Atau tanya apa saja tanpa perintah. Wayyuh AI diciptakan dan dikembangkan oleh ${CREATOR}.`, `Or just ask anything. Wayyuh AI was created and developed by ${CREATOR}.`)}</div>`;
+  let h = `<strong>${L("Alat Wayyuh AI", "Wayyuh AI's tools")}</strong><div class='meta'>${L(`Atau tanya apa saja tanpa perintah. Wayyuh AI diciptakan dan dikembangkan oleh ${CREATOR}, powered by ${POWERED}.`, `Or just ask anything. Wayyuh AI was created and developed by ${CREATOR}, powered by ${POWERED}.`)}</div>`;
   for (const [g, gid, gen] of CMD_GROUPS){
     const list = CMDS.filter(c => c.group === g);
     h += `<div class="feat-group">${cfg.lang === "en" ? gen : gid}</div><div class="feat-grid">`;
@@ -4284,7 +4284,7 @@ function renderWelcome(){
     </section>
     <footer class="hx-foot">
       <span class="hx-foot-brand">${tile()}<b>Wayyuh AI</b></span>
-      <span>${esc(t("madeBy", { creator: CREATOR }))}</span>
+      <span>${esc(t("madeBy", { creator: CREATOR, powered: POWERED }))}</span>
       <span class="hx-foot-dim">${esc(t("disclaim"))}</span>
       <span class="hx-foot-dim">${esc(t("footVer"))}</span>
       <span class="hw-only hx-hw-note">${esc(t("hwFoot"))}</span>
@@ -5106,7 +5106,7 @@ function renderComposerTools(){
   if (cfg.guru){ input.placeholder = t("guruPh"); }
   else input.placeholder = innerWidth < 560 ? t("placeholder") : $("#dock").classList.contains("in-hero") ? t("placeholderHome") : innerWidth < 560 ? t("placeholder") : t("placeholderLong");
   const pb = $("#plusBtn"); if (pb){ pb.classList.toggle("on", !!(cfg.search && caps.search)); pb.title = t("plusMenu"); }
-  $("#footnote").textContent = t("footnote", { creator: CREATOR });
+  $("#footnote").textContent = t("footnote", { creator: CREATOR, powered: POWERED });
 }
 function modelMenu(anchor){
   const models = caps.models || [{ id: "fast" }];
@@ -6351,7 +6351,7 @@ function openAbout(){
     <div class="sheet-top" style="width:100%">${tile()}<button class="icon-btn" type="button" data-close aria-label="${esc(t("close"))}">${ic("close")}</button></div>
     <h2 id="aboutTitle">${esc(t("aboutTitle"))}</h2>
     <p>${esc(t("aboutBody"))}</p>
-    <p>${esc(t("aboutCreator", { creator: CREATOR }))}</p>
+    <p>${esc(t("aboutCreator", { creator: CREATOR, powered: POWERED }))}</p>
     <div class="cap-list facts">
       <div class="cap"><span>${esc(t("aboutServer"))}</span><span class="st ${v2() ? "on" : "need"}">${esc(srv)}</span></div>
       <div class="cap"><span>${esc(t("aboutLocal"))}</span></div>
