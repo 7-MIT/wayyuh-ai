@@ -183,78 +183,127 @@ function modeCard(cx, cy, w, h, a, o){   // o: {name, color, desc, tag, draw}
   text(o.desc[0], cx, cy + 92, { size: 38, weight: 500, font: BODY, alpha: a * .92, color: "#E3F1E9" });
   text(o.desc[1], cx, cy + 140, { size: 38, weight: 500, font: BODY, alpha: a * .92, color: "#E3F1E9" });
 }
-function sceneS3(t){   // 6–10 : AI Modes
-  const T = t - 6; background(t, 1); particles(t, .6, .8);
-  const titleY = lerp(CY, 215, eIO(prog(T, 1, 1.8))), titleS = lerp(210, 92, eIO(prog(T, 1, 1.8)));
-  const ta = eOut5(prog(T, 0, .6));
-  text("AI Modes", CX, titleY, { size: titleS, weight: 800, spacing: -3, alpha: ta, glow: 36, blur: (1 - ta) * 16 });
-  const pa = eOut5(prog(T, 1, 1.8)), pb = eOut5(prog(T, 1.5, 2.3)), yy = CY + 90;
-  modeCard(CX - 480, yy + (1 - pa) * 60, 880, 470, pa, { name: "FAST", tag: "⚡", color: FAST_C, desc: ["Jawaban cepat untuk", "keseharian"], draw: (x, y, w, h) => { streaks(x, y, w, h, t, FAST_C, 1); glowCircle(x + w * .5, y + h * .5, 340, rgba(FAST_C, .5), .35); } });
-  modeCard(CX + 480, yy + (1 - pb) * 60, 880, 470, pb, { name: "PRO", tag: "✦", color: PRO_C, desc: ["Lebih teliti untuk soal sulit", "dan analisis mendalam"], draw: (x, y, w, h) => { rings(x + w * .5, y + h * .5, t, PRO_C); } });
+function chipPill(label, c, x, y, a, size = 40){
+  if (a <= 0) return; ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y + (1 - a) * 24); ctx.font = `800 ${size}px ${DISPLAY}`; const w = ctx.measureText(label).width + size * 1.9;
+  ctx.shadowColor = c; ctx.shadowBlur = 36; ctx.fillStyle = "rgba(6,12,10,.92)"; roundRect(-w / 2, -size * .95, w, size * 1.9, size * .95); ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.stroke(); ctx.shadowBlur = 0;
+  ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(label, 0, 2); ctx.restore();
 }
-function sceneS4(t){   // 10–15 : the real UI
-  const T = t - 10; background(t, .9); particles(t, .7, .7);
-  const p = eOut(prog(T, 0, 1.1)), push = 1.02 + .05 * (T / 5), swap = prog(T, 2.5, 3);
-  ctx.save(); ctx.translate(CX, CY); ctx.scale(push, push); ctx.translate(-CX, -CY);
-  screen(IMG.uifast, CX + 320, CY + 10, 1180, -.04 * (1 - p) - .016, p);
-  if (swap > 0){ ctx.save(); ctx.globalAlpha = swap; screen(IMG.uipro, CX + 320, CY + 10, 1180, -.016, 1); ctx.restore(); }
-  // callout chips that point at the real menu
-  const chip = (label, c, x, y, a) => { if (a <= 0) return; ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y + (1 - a) * 24); ctx.font = `800 40px ${DISPLAY}`; const w = ctx.measureText(label).width + 76;
-    ctx.shadowColor = c; ctx.shadowBlur = 36; ctx.fillStyle = "rgba(6,12,10,.92)"; roundRect(-w / 2, -38, w, 76, 38); ctx.fill(); ctx.strokeStyle = c; ctx.lineWidth = 3; ctx.stroke(); ctx.shadowBlur = 0;
-    ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(label, 0, 2); ctx.restore(); };
-  chip("⚡ Fast", FAST_C, CX + 20, CY + 105, eOut(prog(T, 1, 1.5)) * (1 - prog(T, 2.5, 3) * .55));
-  chip("✦ Pro", PRO_C, CX + 20, CY + 190, eOut(prog(T, 1.5, 2)) * (.55 + .45 * prog(T, 2.5, 3)));
-  ctx.restore();
-  const a = eOut(prog(T, .5, 1)) * (1 - prog(T, 5.5, 6));
-  text("One tap.", 150, CY - 70, { size: 96, weight: 800, align: "left", alpha: a, spacing: -3, glow: 30, blur: (1 - a) * 10 });
-  const b = eOut(prog(T, 1, 1.5)) * (1 - prog(T, 5.5, 6));
-  text("Fast or Pro.", 150, CY + 40, { size: 96, weight: 800, align: "left", alpha: b, spacing: -3, glow: 30, color: EM, blur: (1 - b) * 10 });
+function sceneModels(t){   // 8 beats: title, FAST and PRO cards, then the real menu
+  const T = t - 6; background(t, 1); particles(t, .6, .8);
+  const ta = eOut5(prog(T, 0, .4)), shrink = eIO(prog(T, .5, 1));
+  text("AI Models", CX, lerp(CY, 205, shrink), { size: lerp(210, 92, shrink), weight: 800, spacing: -3, alpha: ta, glow: 36, blur: (1 - ta) * 16 });
+  const out = 1 - eIO(prog(T, 2, 2.5)), pa = eOut5(prog(T, .5, 1)) * out, pb = eOut5(prog(T, 1, 1.5)) * out, yy = CY + 90;
+  modeCard(CX - 480 - (1 - out) * 260, yy + (1 - eOut5(prog(T, .5, 1))) * 60, 880, 470, pa, { name: "FAST", tag: "⚡", color: FAST_C, desc: ["Jawaban cepat untuk", "keseharian"], draw: (x, y, w, h) => { streaks(x, y, w, h, t, FAST_C, 1); glowCircle(x + w * .5, y + h * .5, 340, rgba(FAST_C, .5), .35); } });
+  modeCard(CX + 480 + (1 - out) * 260, yy + (1 - eOut5(prog(T, 1, 1.5))) * 60, 880, 470, pb, { name: "PRO", tag: "✦", color: PRO_C, desc: ["Lebih teliti untuk soal sulit", "dan analisis mendalam"], draw: (x, y, w, h) => { rings(x + w * .5, y + h * .5, t, PRO_C); } });
+  const u = eOut5(prog(T, 2.2, 3));
+  crop(IMG.uipro, 420, 430, 780, 270, CX, CY + 70, 1.7, -.012, u);
+  chipPill("⚡ Fast", FAST_C, CX - 200, CY + 335, eOut(prog(T, 2.5, 3)) * (1 - prog(T, 3.5, 4) * .5));
+  chipPill("✦ Pro", PRO_C, CX + 200, CY + 335, eOut(prog(T, 3, 3.5)));
 }
 const NET = (() => { const r = rng(5), pts = []; for (let i = 0; i < 90; i++){ const th = r() * 6.283, ph = Math.acos(2 * r() - 1), rad = 380 + r() * 360; pts.push([rad * Math.sin(ph) * Math.cos(th), rad * Math.cos(ph) * .8, rad * Math.sin(ph) * Math.sin(th), r()]); }
   const edges = []; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++){ const d = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1], pts[i][2] - pts[j][2]); if (d < 330) edges.push([i, j, d, r()]); } return { pts, edges }; })();
-function sceneS5(t){   // 15–22 : Enhanced Intelligence
-  const T = t - 15; background(t, 1.1);
-  const ignite = eIO(prog(T, 3, 4)), rot = T * .22 + .6, cs = Math.cos(rot), sn = Math.sin(rot), f = 1300;
+function sceneEI(t){   // 8 beats: the network wakes up and ignites
+  const T = t - 10; background(t, 1.1);
+  const ignite = eIO(prog(T, 1.5, 2.5)), rot = T * .4 + .6, cs = Math.cos(rot), sn = Math.sin(rot), f = 1300;
   const proj = P3 => { const x = P3[0] * cs - P3[2] * sn, z = P3[0] * sn + P3[2] * cs + 900, k = f / (f + z); return [CX + x * k, CY + P3[1] * k, k]; };
-  const grow = eOut(prog(T, 0, 1.6));
+  const grow = eOut(prog(T, 0, 1));
   ctx.save(); ctx.globalCompositeOperation = "lighter";
   for (const [i, j, d, r] of NET.edges){
     if (r > grow) continue; const a = proj(NET.pts[i]), b = proj(NET.pts[j]);
     const al = (.10 + .22 * ignite) * Math.min(a[2], b[2]) * 1.4;
     ctx.strokeStyle = rgba(r > .5 ? EM : AMB, al); ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-    const ph = ((T * (.5 + r * .9) + r * 7) % 1), px = lerp(a[0], b[0], ph), py = lerp(a[1], b[1], ph);   // a signal travelling along the edge
+    const ph = ((T * (.9 + r * 1.4) + r * 7) % 1), px = lerp(a[0], b[0], ph), py = lerp(a[1], b[1], ph);
     ctx.fillStyle = rgba(r > .5 ? "#BFFFE6" : "#FFE2A6", (.35 + .6 * ignite) * Math.min(a[2], b[2]) * 1.3); ctx.beginPath(); ctx.arc(px, py, 2.4 + 2 * ignite, 0, 6.283); ctx.fill();
   }
-  for (const P3 of NET.pts){ const q = proj(P3), tw = .6 + .4 * Math.sin(T * 2 + P3[3] * 9); glowCircle(q[0], q[1], (12 + 22 * ignite) * q[2] * 1.6, rgba(P3[3] > .5 ? EM : AMB, 1), (.35 + .5 * ignite) * tw); }
+  for (const P3 of NET.pts){ const q = proj(P3), tw = .6 + .4 * Math.sin(T * 3 + P3[3] * 9); glowCircle(q[0], q[1], (12 + 22 * ignite) * q[2] * 1.6, rgba(P3[3] > .5 ? EM : AMB, 1), (.35 + .5 * ignite) * tw); }
   ctx.restore();
   const v = ctx.createRadialGradient(CX, CY, 120, CX, CY, 760); v.addColorStop(0, "rgba(4,8,10,.78)"); v.addColorStop(1, "rgba(4,8,10,0)"); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
-  const a1 = eOut5(prog(T, 1.0, 1.8)), a2 = eOut5(prog(T, 1.5, 2.2)), out = 1 - prog(T, 7.5, 8);
-  text("Enhanced", CX, CY - 100, { size: 190, weight: 800, spacing: -6, alpha: a1 * out, glow: 40, blur: (1 - a1) * 18 });
-  gradText("Intelligence", CX, CY + 85, 190, EM, LIME, AMB, { alpha: a2 * out, spacing: -6, shift: Math.sin(T * 1.2), blur: (1 - a2) * 18 });
-  text("Lebih cerdas di setiap jawaban.", CX, CY + 245, { size: 42, weight: 500, font: BODY, alpha: eOut(prog(T, 3.0, 3.8)) * out, color: "#D8EDE2" });
-  text("powered by intelligence.7mit", CX, CY + 305, { size: 28, weight: 700, font: BODY, spacing: 8, alpha: eOut(prog(T, 4, 4.8)) * out * .85, color: EM });
+  const a1 = eOut5(prog(T, .5, 1)), a2 = eOut5(prog(T, 1, 1.5));
+  text("Enhanced", CX, CY - 100, { size: 190, weight: 800, spacing: -6, alpha: a1, glow: 40, blur: (1 - a1) * 18 });
+  gradText("Intelligence", CX, CY + 85, 190, EM, LIME, AMB, { alpha: a2, spacing: -6, shift: Math.sin(T * 1.2), blur: (1 - a2) * 18 });
+  text("Lebih cerdas di setiap jawaban.", CX, CY + 245, { size: 42, weight: 500, font: BODY, alpha: eOut(prog(T, 2.5, 3)), color: "#D8EDE2" });
+  text("powered by intelligence.7mit", CX, CY + 305, { size: 28, weight: 700, font: BODY, spacing: 8, alpha: eOut(prog(T, 3, 3.5)) * .85, color: EM });
 }
-function sceneS6(t){   // 22–30 : end card
+function cloudShape(cx, cy, sc, c, a, glow){
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(cx, cy); ctx.scale(sc, sc); ctx.shadowColor = c; ctx.shadowBlur = 30 + 50 * glow; ctx.fillStyle = rgba(c, .14 + .2 * glow); ctx.strokeStyle = c; ctx.lineWidth = 5; ctx.lineJoin = "round";
+  ctx.beginPath(); ctx.moveTo(-110, 40); ctx.bezierCurveTo(-175, 40, -175, -32, -110, -32); ctx.bezierCurveTo(-110, -105, -20, -125, 10, -72); ctx.bezierCurveTo(50, -112, 135, -82, 122, -20); ctx.bezierCurveTo(175, -8, 175, 40, 110, 40); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+}
+function googleG(x, y, r, a){
+  ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+  ctx.lineWidth = r * .28; ctx.lineCap = "butt"; const R = r * .58;
+  [["#EA4335", -2.4, -.95], ["#FBBC05", 2.2, 3.7], ["#34A853", .75, 2.2], ["#4285F4", -.95, .75]].forEach(([c, a0, a1]) => { ctx.strokeStyle = c; ctx.beginPath(); ctx.arc(x, y, R, a0, a1); ctx.stroke(); });
+  ctx.fillStyle = "#4285F4"; ctx.fillRect(x, y - r * .13, r * .62, r * .26); ctx.restore();
+}
+function sceneAcct(t){   // 8 beats: one account for all data, sign in with Google
+  const T = t - 14; background(t, 1); particles(t, .7, .8);
+  text("AKUN & DATA", 150, 235, { size: 30, weight: 700, font: BODY, align: "left", spacing: 14, alpha: eOut(prog(T, 0, .4)), color: EM });
+  const a1 = eOut5(prog(T, .5, 1)), a2 = eOut5(prog(T, 1.5, 2));
+  text("Satu akun.", 150, CY - 40, { size: 98, weight: 800, align: "left", spacing: -3, alpha: a1, glow: 28, blur: (1 - a1) * 12 });
+  text("Semua datamu.", 150, CY + 70, { size: 98, weight: 800, align: "left", spacing: -3, alpha: a2, glow: 28, color: EM, blur: (1 - a2) * 12 });
+  const gp = eOut5(prog(T, 2.5, 3)); if (gp > 0){ ctx.save(); ctx.globalAlpha = gp; ctx.translate(0, (1 - gp) * 24); ctx.font = `700 40px ${BODY}`; const lw = ctx.measureText("Masuk dengan Google").width + 120;
+    ctx.shadowColor = "rgba(255,255,255,.5)"; ctx.shadowBlur = 30; ctx.fillStyle = "#fff"; roundRect(150, CY + 170, lw, 84, 42); ctx.fill(); ctx.restore(); googleG(150 + 46, CY + 212 + (1 - gp) * 24, 22, gp);
+    text("Masuk dengan Google", 150 + 84, CY + 212 + (1 - gp) * 24, { size: 40, weight: 700, font: BODY, align: "left", color: "#1f1f1f", alpha: gp }); }
+  const cx = CX + 430, pulse = Math.exp(-((T * 2) % 1) * 5);
+  cloudShape(cx, CY - 250, 1.15, EM, eOut(prog(T, .5, 1)), pulse * eOut(prog(T, 2, 2.5)));
+  screen(IMG.uiacct, cx, CY + 150, 780, .02 * (1 - eOut(prog(T, 1, 2))) + .008, eOut5(prog(T, 1, 2)));
+  const items = [["Chat", EM], ["Memori", AMB], ["Proyek", EM], ["Catatan", AMB], ["Pengaturan", EM], ["Tugas", AMB]];
+  items.forEach(([lab, c], i) => {
+    const st = 2 + i * .5, p = prog(T, st, st + .5); if (p <= 0 || p >= 1) return;
+    const x = cx + Math.sin(i * 2.1) * 90, y = lerp(CY - 10, CY - 235, eIn(p));
+    chipPill(lab, c, x, y, Math.sin(Math.PI * p) * 1.1 > 1 ? 1 : Math.sin(Math.PI * p) * 1.1, 26);
+  });
+}
+function sceneIndo(t){   // 8 beats: Indonesian scenery as the background, a new photo every day
+  const T = t - 18, seq = [["raja", "Raja Ampat"], ["bromo", "Gunung Bromo"], ["bratan", "Pura Ulun Danu Bratan"], ["prambanan", "Candi Prambanan"]];
+  const i = Math.min(3, Math.floor(T)), L = T - i;
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+  cover(IMG[seq[i][0]], 1, 1.05 + .09 * L, .5, .5, (i % 2 ? 1 : -1) * 46 * L);
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "rgba(0,0,0,.25)"); g.addColorStop(.55, "rgba(0,0,0,.1)"); g.addColorStop(1, "rgba(0,0,0,.78)"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const lg = ctx.createLinearGradient(0, 0, W * .7, 0); lg.addColorStop(0, "rgba(0,0,0,.55)"); lg.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+  const a1 = eOut5(prog(T, 0, .5)), a2 = eOut5(prog(T, .5, 1));
+  text("Pemandangan", 150, CY + 50, { size: 150, weight: 800, align: "left", spacing: -4, alpha: a1, glow: 30, blur: (1 - a1) * 14 });
+  gradText("Indonesia", 150 + ((() => { ctx.save(); ctx.font = `800 150px ${DISPLAY}`; ctx.letterSpacing = "-4px"; const w = ctx.measureText("Indonesia").width; ctx.restore(); return w; })()) / 2, CY + 200, 150, EM, LIME, AMB, { alpha: a2, spacing: -4, blur: (1 - a2) * 14, glowSize: 30 });
+  const cap = eOut(prog(L, 0, .3)) * (1 - prog(L, .85, 1));
+  text("●  " + seq[i][1], 150, CY + 335, { size: 38, weight: 700, font: BODY, align: "left", alpha: cap, color: "#fff", spacing: 1 });
+  chipPill("Berganti setiap hari", EM, CX + 560, CY - 260, eOut(prog(T, 2, 2.5)), 34);
+}
+function sceneImport(t){   // 8 beats: bring memories over from another AI
+  const T = t - 30; background(t, 1); particles(t, .7, .8);
+  text("MEMORI", 150, 235, { size: 30, weight: 700, font: BODY, align: "left", spacing: 14, alpha: eOut(prog(T, 0, .4)), color: EM });
+  const a1 = eOut5(prog(T, .5, 1)), a2 = eOut5(prog(T, 1.5, 2));
+  text("Impor memori", 150, CY - 60, { size: 112, weight: 800, align: "left", spacing: -3, alpha: a1, glow: 28, blur: (1 - a1) * 12 });
+  text("dari AI lain.", 150, CY + 60, { size: 112, weight: 800, align: "left", spacing: -3, alpha: a2, glow: 28, color: EM, blur: (1 - a2) * 12 });
+  const steps = [["1", "Salin prompt", 2], ["2", "Tempel hasil", 2.5], ["3", "Tambah ke memori", 3]];
+  steps.forEach(([n, lab, st], k) => { const a = eOut5(prog(T, st, st + .5)); if (a <= 0) return; ctx.save(); ctx.globalAlpha = a; ctx.translate((1 - a) * -60, 0);
+    ctx.fillStyle = rgba(EM, .16); ctx.strokeStyle = EM; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(176, CY + 170 + k * 78, 26, 0, 6.283); ctx.fill(); ctx.stroke(); ctx.restore();
+    text(n, 176, CY + 171 + k * 78, { size: 28, weight: 800, alpha: a, color: EM }); text(lab, 226 + (1 - a) * -60, CY + 171 + k * 78, { size: 40, weight: 600, font: BODY, align: "left", alpha: a, color: "#EAF5EE" }); });
+  const p = eOut5(prog(T, 1, 2)); screen(IMG.uiimp, CX + 400, CY + 25, 560, -.02 * (1 - p) - .012, p);
+  chipPill("12 bahasa", AMB, CX + 400, CY - 335, eOut(prog(T, 3.5, 4)), 32);
+}
+function sceneS6(t){   // 8 beats: end card
   const T = t - 22; background(t, 1); cover(IMG.padar, .24, 1.08 + .02 * T, .5, .5); ctx.fillStyle = "rgba(2,8,6,.55)"; ctx.fillRect(0, 0, W, H); particles(t, .8, .6);
-  const p = eOut5(prog(T, 0, 1)); drawW(CX, CY - 275, 140 * (.85 + .15 * p), 1, { t, glow: 34, tileAlpha: p });
-  text("WAYYUH AI", CX, CY - 120, { size: 150, weight: 800, spacing: 6, alpha: eOut(prog(T, .3, 1.1)), glow: 30, blur: (1 - eOut(prog(T, .3, 1.1))) * 14 });
-  gradText("UPDATE 1.2", CX, CY - 5, 96, EM, LIME, AMB, { alpha: eOut(prog(T, 1, 1.5)), spacing: 8, glowSize: 30 });
-  text("Fast  ·  Pro  ·  Enhanced Intelligence", CX, CY + 85, { size: 40, weight: 500, font: BODY, alpha: eOut(prog(T, 1.5, 2.2)) * .92, color: "#E3F1E9", spacing: 1 });
-  const ua = eOut(prog(T, 2.0, 2.8)); ctx.save(); ctx.globalAlpha = ua; ctx.font = `700 60px ${BODY}`; ctx.textAlign = "center"; const uw = ctx.measureText("ai.wayyuh.org").width + 90;
-  ctx.fillStyle = rgba(EM, .12); roundRect(CX - uw / 2, CY + 150, uw, 96, 48); ctx.fill(); ctx.strokeStyle = rgba(EM, .7); ctx.lineWidth = 2.5; ctx.shadowColor = EM; ctx.shadowBlur = 24; roundRect(CX - uw / 2, CY + 150, uw, 96, 48); ctx.stroke(); ctx.restore();
-  text("ai.wayyuh.org", CX, CY + 198, { size: 60, weight: 700, font: BODY, alpha: ua });
-  text("Tersedia sekarang", CX, CY + 282, { size: 34, weight: 500, font: BODY, alpha: eOut(prog(T, 3, 3.5)) * .9, color: EM, spacing: 4 });
-  text("Dibuat oleh United Wayyuh  ·  Powered by intelligence.7mit", CX, CY + 330, { size: 24, weight: 400, font: BODY, alpha: eOut(prog(T, 3.5, 4.2)) * .6, spacing: 1 });
+  const p = eOut5(prog(T, 0, 1)); drawW(CX, CY - 300, 120 * (.85 + .15 * p), 1, { t, glow: 34, tileAlpha: p });
+  text("WAYYUH AI", CX, CY - 175, { size: 130, weight: 800, spacing: 6, alpha: eOut(prog(T, 0, .5)), glow: 30, blur: (1 - eOut(prog(T, 0, .5))) * 14 });
+  gradText("UPDATE 1.2", CX, CY - 80, 88, EM, LIME, AMB, { alpha: eOut(prog(T, .5, 1)), spacing: 8, glowSize: 30 });
+  text("AI Models  ·  Enhanced Intelligence  ·  Akun & Data", CX, CY + 5, { size: 34, weight: 500, font: BODY, alpha: eOut(prog(T, 1, 1.5)) * .92, color: "#E3F1E9", spacing: 1 });
+  text("Pemandangan Indonesia  ·  Impor Memori", CX, CY + 52, { size: 34, weight: 500, font: BODY, alpha: eOut(prog(T, 1.5, 2)) * .92, color: "#E3F1E9", spacing: 1 });
+  const ua = eOut(prog(T, 2, 2.5)); ctx.save(); ctx.globalAlpha = ua; ctx.font = `700 58px ${BODY}`; ctx.textAlign = "center"; const uw = ctx.measureText("ai.wayyuh.org").width + 90;
+  ctx.fillStyle = rgba(EM, .12); roundRect(CX - uw / 2, CY + 105, uw, 92, 46); ctx.fill(); ctx.strokeStyle = rgba(EM, .7); ctx.lineWidth = 2.5; ctx.shadowColor = EM; ctx.shadowBlur = 24; roundRect(CX - uw / 2, CY + 105, uw, 92, 46); ctx.stroke(); ctx.restore();
+  text("ai.wayyuh.org", CX, CY + 151, { size: 58, weight: 700, font: BODY, alpha: ua });
+  text("Tersedia sekarang", CX, CY + 242, { size: 34, weight: 500, font: BODY, alpha: eOut(prog(T, 3, 3.5)) * .9, color: EM, spacing: 4 });
+  text("Dibuat oleh United Wayyuh  ·  Powered by intelligence.7mit", CX, CY + 292, { size: 24, weight: 400, font: BODY, alpha: eOut(prog(T, 3.5, 4)) * .6, spacing: 1 });
 }
 /* scene plan in beats of the song (136 BPM): the drop is on beat 8, every cut is a multiple of 4 beats away from it.
    o0 = where the scene's own clock starts, k = scene seconds per song beat. */
 const PLAN = [
-  { b0: 0,  n: 8,  o0: 0,  k: .375, fn: sceneS1 },   // pulse + the bass-less build-up
-  { b0: 8,  n: 8,  o0: 3,  k: .375, fn: sceneS2 },   // DROP: UPDATE 1.2
-  { b0: 16, n: 8,  o0: 6,  k: .5,   fn: sceneS3 },   // AI Modes
-  { b0: 24, n: 12, o0: 10, k: .5,   fn: sceneS4 },   // the real UI
-  { b0: 36, n: 16, o0: 15, k: .5,   fn: sceneS5 },   // Enhanced Intelligence
-  { b0: 52, n: 12, o0: 22, k: .5,   fn: sceneS6 }    // end card over the song's comedown
+  { b0: 0,  n: 8, o0: 0,  k: .375, fn: sceneS1 },     // pulse + the bass-less build-up
+  { b0: 8,  n: 8, o0: 3,  k: .375, fn: sceneS2 },     // DROP: UPDATE 1.2
+  { b0: 16, n: 8, o0: 6,  k: .5,   fn: sceneModels }, // AI Models
+  { b0: 24, n: 8, o0: 10, k: .5,   fn: sceneEI },     // Enhanced Intelligence
+  { b0: 32, n: 8, o0: 14, k: .5,   fn: sceneAcct },   // Akun & Data (Google)
+  { b0: 40, n: 8, o0: 18, k: .5,   fn: sceneIndo },   // Pemandangan Indonesia
+  { b0: 48, n: 8, o0: 30, k: .5,   fn: sceneImport }, // Impor Memori
+  { b0: 56, n: 8, o0: 22, k: .5,   fn: sceneS6 }      // end card over the song's comedown
 ];
 window.draw = function(t){
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = "source-over"; ctx.filter = "none";
@@ -272,7 +321,8 @@ window.draw = function(t){
 window.ready = (async () => {
   await Promise.all([document.fonts.load('800 100px "Bricolage Grotesque"'), document.fonts.load('700 40px "DM Sans"'), document.fonts.load('500 40px "DM Sans"'), document.fonts.load('400 40px "DM Sans"')]);
   await document.fonts.ready;
-  IMG.padar = await loadImg("assets/padar.jpg"); IMG.uifast = await loadImg("assets/ui-fast.png"); IMG.uipro = await loadImg("assets/ui-pro.png");
+  for (const n of ["padar", "raja", "bromo", "bratan", "prambanan"]) IMG[n] = await loadImg(`assets/${n}.jpg`);
+  IMG.uipro = await loadImg("assets/ui-pro.png"); IMG.uiacct = await loadImg("assets/ui-account.png"); IMG.uiimp = await loadImg("assets/ui-import.png");
   return Object.entries(IMG).filter(([, v]) => !v).map(([k]) => k);
 })();
 </script></body></html>
