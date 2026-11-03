@@ -501,7 +501,11 @@ kbd{font:500 11px var(--mono);color:var(--faint);border:1px solid var(--line-2);
 .mem-add{display:flex;gap:8px}
 .mem-add input{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);border-radius:10px;padding:9px 12px;outline:none}
 .mem-add input:focus{border-color:var(--accent)}
-#modelBtn{margin-left:8px}
+html .shell #modelBtn,html #modelBtn{width:auto;min-width:38px;max-width:none}
+#modelBtn{margin-left:14px;gap:6px;padding:0 10px 0 9px;height:34px;border:1px solid var(--hx-line2);border-radius:999px;background:var(--hx-hover);flex:none}
+#modelBtn:hover{border-color:var(--hx-accent)}
+#modelBtn svg:first-child{color:var(--hx-accent)}
+#plusBtn{margin-right:2px}
 .acc-form{display:flex;flex-direction:column;gap:12px}
 #accSeg{margin:8px 0 6px}
 .g-btn{width:100%;justify-content:center;gap:10px;background:#fff!important;color:#1f1f1f!important;border:1px solid #dadce0!important;font-weight:600}
@@ -5663,6 +5667,7 @@ function renderComposerTools(){
   const mb = $("#modelBtn"), models = caps.models || MODEL_DEFAULTS;
   const curM = models.find(m => m.id === cfg.model) || models[0];
   $("#modelLbl").textContent = modelLabel(curM);
+  const mi = mb.querySelector("svg"); if (mi) mi.outerHTML = ic(modelIcon(curM));   // bolt for Fast, sparkle for Pro
   mb.title = `${t("modelPick")} · ${modelLabel(curM)}${curM.model ? " (" + curM.model + ")" : ""}`;
   mb.setAttribute("aria-label", mb.title);
   const at = $("#attachBtn"); at.title = t("attachFile"); at.setAttribute("aria-label", t("attachFile"));
