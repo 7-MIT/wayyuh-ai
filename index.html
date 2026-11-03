@@ -501,6 +501,16 @@ kbd{font:500 11px var(--mono);color:var(--faint);border:1px solid var(--line-2);
 .mem-add{display:flex;gap:8px}
 .mem-add input{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);border-radius:10px;padding:9px 12px;outline:none}
 .mem-add input:focus{border-color:var(--accent)}
+.imp-step{display:flex;gap:12px;align-items:flex-start}
+.imp-n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 13px var(--mono);border:1px solid var(--line-2);color:var(--muted)}
+.imp-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.imp-lang{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.imp-lang select{border:1px solid var(--line-2);background:var(--surface);color:inherit;border-radius:10px;padding:6px 10px;font:inherit}
+.imp-prompt{position:relative}
+.imp-prompt textarea,#impPaste{width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--line-2);background:var(--surface);color:inherit;border-radius:12px;padding:10px 12px;font:13px/1.5 var(--body);outline:none}
+.imp-prompt textarea{max-height:170px;padding-bottom:44px}
+#impPaste:focus,.imp-prompt textarea:focus{border-color:var(--accent)}
+.imp-prompt .btn{position:absolute;right:8px;bottom:8px;padding:6px 12px}
 .toast{
   position:fixed;left:50%;bottom:calc(110px + env(safe-area-inset-bottom,0px));z-index:70;display:inline-flex;align-items:center;gap:8px;
   padding:9px 16px;border-radius:12px;font-size:13.5px;background:var(--ink);color:var(--bg);box-shadow:0 12px 30px -12px var(--shadow);
@@ -2440,7 +2450,7 @@ const I18N = {
     save: "Simpan", saved: "Pengaturan disimpan", close: "Tutup",
     memTitle: "Memori", memSub: "Hal yang Wayyuh AI ingat tentangmu. Ikut terkirim di setiap percakapan.", memAdd: "Tambah, misal: aku suka kopi tanpa gula",
     memEmpty: "Belum ada memori. Tambahkan di bawah, ketik /ingat …, atau bilang \"ingat ya, aku …\" di chat.",
-    memClear: "Hapus semua", memAuto: "otomatis", memExists: "Sudah ada di memori", forget: "Lupakan",
+    memImport: "Import dari AI lain", memImpTitle: "Import memori ke Wayyuh AI", memImpSub: "Pindahkan hal yang sudah diingat AI lain tentangmu. Hasilnya masuk ke daftar memori di perangkat ini.", memImpStep1: "Salin prompt ini ke chat dengan penyedia AI-mu yang lain", memImpLang: "Bahasa prompt", memImpStep2: "Tempel hasilnya di bawah untuk menambahkannya ke memori Wayyuh AI", memImpPaste: "Tempel detail memorimu di sini", memImpFound: "{n} entri terdeteksi", memImpNone: "Belum ada entri yang bisa dibaca. Pakai format [YYYY-MM-DD] - isi entri.", memImpAdd: "Tambah ke memori", memImpBack: "Kembali", memImpDone: "{n} memori ditambahkan, {d} dilewati (sudah ada)", memClear: "Hapus semua", memAuto: "otomatis", memExists: "Sudah ada di memori", forget: "Lupakan",
     installed: "Wayyuh AI sudah terpasang", greetMorning: "Selamat pagi", greetNoon: "Selamat siang", greetAfternoon: "Selamat sore", greetNight: "Selamat malam",
     untitled: "Percakapan baru", renamed: "Nama diganti", moved: "Dipindahkan ke {p}",
     paletteTitle: "Alat Wayyuh AI"
@@ -2539,7 +2549,7 @@ const I18N = {
     save: "Save", saved: "Settings saved", close: "Close",
     memTitle: "Memory", memSub: "Things Wayyuh AI remembers about you. Sent with every conversation.", memAdd: "Add, e.g.: I like my coffee without sugar",
     memEmpty: "No memories yet. Add one below, type /ingat …, or say \"remember that I …\" in chat.",
-    memClear: "Delete all", memAuto: "auto", memExists: "Already in memory", forget: "Forget",
+    memImport: "Import from another AI", memImpTitle: "Import memory to Wayyuh AI", memImpSub: "Bring over what another AI already remembers about you. Entries join the memory list on this device.", memImpStep1: "Copy this prompt into a chat with your other AI provider", memImpLang: "Prompt language", memImpStep2: "Paste the results below to add them to Wayyuh AI's memory", memImpPaste: "Paste your memory details here", memImpFound: "{n} entries found", memImpNone: "No readable entries yet. Use the format [YYYY-MM-DD] - entry.", memImpAdd: "Add to memory", memImpBack: "Back", memImpDone: "{n} memories added, {d} skipped (already there)", memClear: "Delete all", memAuto: "auto", memExists: "Already in memory", forget: "Forget",
     installed: "Wayyuh AI is installed", greetMorning: "Good morning", greetNoon: "Good afternoon", greetAfternoon: "Good afternoon", greetNight: "Good evening",
     untitled: "New conversation", renamed: "Renamed", moved: "Moved to {p}",
     paletteTitle: "Wayyuh AI tools"
@@ -6529,7 +6539,7 @@ function renderMemories(){
     <label class="switch-row" for="memAutoSw"><span>${esc(t("memAutoL"))}</span><input type="checkbox" class="switch" id="memAutoSw"${memAuto ? " checked" : ""}></label>
     <ul class="mem-list" id="memList"></ul>
     <form class="mem-add" id="memAdd"><input id="memInput" placeholder="${esc(t("memAdd"))}" autocomplete="off" aria-label="${esc(t("memAdd"))}"><button class="btn primary" type="submit">${esc(t("save"))}</button></form>
-    <div class="sheet-actions"><button class="btn danger left" type="button" id="memClear">${esc(t("memClear"))}</button><button class="btn" type="button" id="memClose">${esc(t("close"))}</button></div>`;
+    <div class="sheet-actions"><button class="btn danger left" type="button" id="memClear">${esc(t("memClear"))}</button><button class="btn" type="button" id="memImportBtn">${ic("up")}<span>${esc(t("memImport"))}</span></button><button class="btn" type="button" id="memClose">${esc(t("close"))}</button></div>`;
   const ul = $("#memList");
   if (!memories.length) ul.innerHTML = `<li class="mem-empty">${esc(t("memEmpty"))}</li>`;
   memories.forEach((m, i) => {
@@ -6551,8 +6561,243 @@ function renderMemories(){
     if (!armed){ b.classList.add("confirm"); b.textContent = t("clearConfirm"); armed = setTimeout(() => { armed = null; b.classList.remove("confirm"); b.textContent = t("memClear"); }, 3000); return; }
     clearTimeout(armed); memories = []; store.set("memories", memories); updateMemCount(); renderMemories();
   });
+  $("#memImportBtn").addEventListener("click", () => renderMemImport());
   $("#memClose").addEventListener("click", () => closeModal("#memModal"));
 }
+
+/* ================= memory import: bring memories over from another AI provider ================= */
+// Parts: [intro, categories header, instructions, identity, career, projects, preferences, format header, format intro, line template, no-date rule, output header, code-block rule, completeness rule]
+const MEM_PROMPTS = {
+  id: { name: "Bahasa Indonesia", p: [
+    "Ekspor semua memori yang tersimpan tentang aku dan semua konteks yang kamu pelajari tentang aku dari percakapan sebelumnya. Pertahankan kata-kataku apa adanya sebisa mungkin, terutama untuk instruksi dan preferensi.",
+    "Kategori (tampilkan dalam urutan ini):",
+    "**Instruksi**: Aturan yang secara eksplisit kuminta kamu ikuti ke depannya — nada, format, gaya, \"selalu lakukan X\", \"jangan pernah lakukan Y\", dan koreksi atas perilakumu. Hanya sertakan aturan dari memori tersimpan, bukan dari percakapan.",
+    "**Identitas**: Nama, usia, lokasi, pendidikan, keluarga, hubungan, bahasa, dan minat pribadi.",
+    "**Karier**: Peran dan perusahaan saat ini maupun sebelumnya, serta bidang keahlian umum.",
+    "**Proyek**: Proyek yang sungguh-sungguh kubangun atau kujalani. Idealnya SATU entri per proyek. Sertakan fungsinya, status terkini, dan keputusan penting. Gunakan nama proyek atau deskripsi singkat sebagai kata pertama entri.",
+    "**Preferensi**: Opini, selera, dan gaya kerja yang berlaku secara umum.",
+    "Format:",
+    "Gunakan judul bagian untuk setiap kategori. Dalam tiap kategori, tulis satu entri per baris, urutkan dari tanggal paling lama. Format tiap baris:",
+    "[YYYY-MM-DD] - Isi entri di sini.",
+    "Jika tanggal tidak diketahui, gunakan [unknown].",
+    "Keluaran:",
+    "Bungkus seluruh ekspor dalam satu blok kode agar mudah disalin.",
+    "Setelah blok kode, sebutkan apakah ini set yang lengkap atau masih ada yang tersisa."] },
+  en: { name: "English", p: [
+    "Export all of my stored memories and any context you've learned about me from past conversations. Preserve my words verbatim where possible, especially for instructions and preferences.",
+    "Categories (output in this order):",
+    "**Instructions**: Rules I've explicitly asked you to follow going forward — tone, format, style, \"always do X\", \"never do Y\", and corrections to your behavior. Only include rules from stored memories, not from conversations.",
+    "**Identity**: Name, age, location, education, family, relationships, languages, and personal interests.",
+    "**Career**: Current and past roles, companies, and general skill areas.",
+    "**Projects**: Projects I meaningfully built or committed to. Ideally ONE entry per project. Include what it does, current status, and any key decisions. Use the project name or a short descriptor as the first words of the entry.",
+    "**Preferences**: Opinions, tastes, and working-style preferences that apply broadly.",
+    "Format:",
+    "Use section headers for each category. Within each category, list one entry per line, sorted by oldest date first. Format each line as:",
+    "[YYYY-MM-DD] - Entry content here.",
+    "If no date is known, use [unknown] instead.",
+    "Output:",
+    "Wrap the entire export in a single code block for easy copying.",
+    "After the code block, state whether this is the complete set or if more remain."] },
+  es: { name: "Español", p: [
+    "Exporta todos mis recuerdos almacenados y cualquier contexto que hayas aprendido sobre mí en conversaciones anteriores. Conserva mis palabras textualmente siempre que sea posible, sobre todo en instrucciones y preferencias.",
+    "Categorías (en este orden):",
+    "**Instrucciones**: Reglas que te he pedido explícitamente que sigas a partir de ahora: tono, formato, estilo, \"haz siempre X\", \"nunca hagas Y\" y correcciones a tu comportamiento. Incluye solo reglas de los recuerdos almacenados, no de las conversaciones.",
+    "**Identidad**: Nombre, edad, ubicación, estudios, familia, relaciones, idiomas e intereses personales.",
+    "**Carrera**: Puestos y empresas actuales y pasados, y áreas generales de habilidad.",
+    "**Proyectos**: Proyectos que construí o a los que me comprometí de verdad. Idealmente UNA entrada por proyecto. Incluye qué hace, su estado actual y las decisiones clave. Usa el nombre del proyecto o una breve descripción como primeras palabras de la entrada.",
+    "**Preferencias**: Opiniones, gustos y preferencias de trabajo que se aplican en general.",
+    "Formato:",
+    "Usa encabezados de sección para cada categoría. Dentro de cada categoría, escribe una entrada por línea, ordenadas de la fecha más antigua a la más reciente. Da a cada línea este formato:",
+    "[YYYY-MM-DD] - Contenido de la entrada aquí.",
+    "Si no se conoce la fecha, usa [unknown].",
+    "Salida:",
+    "Envuelve toda la exportación en un único bloque de código para copiarla fácilmente.",
+    "Después del bloque de código, indica si es el conjunto completo o si quedan más."] },
+  fr: { name: "Français", p: [
+    "Exporte tous mes souvenirs enregistrés et tout le contexte que tu as appris sur moi lors de conversations passées. Conserve mes mots tels quels autant que possible, surtout pour les instructions et les préférences.",
+    "Catégories (dans cet ordre) :",
+    "**Instructions** : Règles que je t'ai explicitement demandé de suivre à l'avenir — ton, format, style, « fais toujours X », « ne fais jamais Y » et corrections de ton comportement. N'inclus que les règles issues des souvenirs enregistrés, pas des conversations.",
+    "**Identité** : Nom, âge, lieu de résidence, études, famille, relations, langues et centres d'intérêt personnels.",
+    "**Carrière** : Postes et entreprises actuels et passés, et domaines de compétence généraux.",
+    "**Projets** : Projets que j'ai réellement construits ou auxquels je me suis engagé. Idéalement UNE entrée par projet. Indique ce qu'il fait, son état actuel et les décisions clés. Utilise le nom du projet ou une courte description comme premiers mots de l'entrée.",
+    "**Préférences** : Opinions, goûts et préférences de travail qui s'appliquent de façon générale.",
+    "Format :",
+    "Utilise des titres de section pour chaque catégorie. Dans chaque catégorie, écris une entrée par ligne, de la date la plus ancienne à la plus récente. Formate chaque ligne ainsi :",
+    "[YYYY-MM-DD] - Contenu de l'entrée ici.",
+    "Si la date est inconnue, utilise [unknown].",
+    "Sortie :",
+    "Place tout l'export dans un seul bloc de code pour le copier facilement.",
+    "Après le bloc de code, indique s'il s'agit de l'ensemble complet ou s'il en reste."] },
+  de: { name: "Deutsch", p: [
+    "Exportiere alle meine gespeicherten Erinnerungen und jeden Kontext, den du aus früheren Gesprächen über mich gelernt hast. Behalte meine Worte nach Möglichkeit wörtlich bei, besonders bei Anweisungen und Vorlieben.",
+    "Kategorien (in dieser Reihenfolge ausgeben):",
+    "**Anweisungen**: Regeln, die ich dich ausdrücklich gebeten habe, künftig zu befolgen — Ton, Format, Stil, „mach immer X“, „mach nie Y“ und Korrekturen an deinem Verhalten. Nimm nur Regeln aus gespeicherten Erinnerungen auf, nicht aus Gesprächen.",
+    "**Identität**: Name, Alter, Wohnort, Ausbildung, Familie, Beziehungen, Sprachen und persönliche Interessen.",
+    "**Beruf**: Aktuelle und frühere Positionen, Unternehmen und allgemeine Kompetenzbereiche.",
+    "**Projekte**: Projekte, die ich ernsthaft aufgebaut habe oder zu denen ich mich verpflichtet habe. Idealerweise EIN Eintrag pro Projekt. Nenne, was es tut, den aktuellen Stand und wichtige Entscheidungen. Beginne den Eintrag mit dem Projektnamen oder einer kurzen Bezeichnung.",
+    "**Vorlieben**: Meinungen, Geschmäcker und Arbeitsweisen, die allgemein gelten.",
+    "Format:",
+    "Verwende für jede Kategorie eine Abschnittsüberschrift. Liste innerhalb jeder Kategorie einen Eintrag pro Zeile auf, das älteste Datum zuerst. Formatiere jede Zeile so:",
+    "[YYYY-MM-DD] - Inhalt des Eintrags hier.",
+    "Wenn kein Datum bekannt ist, verwende [unknown].",
+    "Ausgabe:",
+    "Packe den gesamten Export in einen einzigen Codeblock, damit er sich leicht kopieren lässt.",
+    "Gib nach dem Codeblock an, ob dies der vollständige Satz ist oder ob noch mehr übrig ist."] },
+  pt: { name: "Português", p: [
+    "Exporte todas as minhas memórias armazenadas e qualquer contexto que você aprendeu sobre mim em conversas anteriores. Preserve minhas palavras literalmente sempre que possível, principalmente em instruções e preferências.",
+    "Categorias (nesta ordem):",
+    "**Instruções**: Regras que pedi explicitamente que você siga daqui em diante — tom, formato, estilo, \"sempre faça X\", \"nunca faça Y\" e correções ao seu comportamento. Inclua apenas regras das memórias armazenadas, não das conversas.",
+    "**Identidade**: Nome, idade, localização, formação, família, relacionamentos, idiomas e interesses pessoais.",
+    "**Carreira**: Cargos e empresas atuais e anteriores, e áreas gerais de habilidade.",
+    "**Projetos**: Projetos que realmente construí ou aos quais me dediquei. Idealmente UMA entrada por projeto. Inclua o que faz, o status atual e as decisões importantes. Use o nome do projeto ou uma descrição curta como primeiras palavras da entrada.",
+    "**Preferências**: Opiniões, gostos e preferências de trabalho que se aplicam de forma geral.",
+    "Formato:",
+    "Use títulos de seção para cada categoria. Dentro de cada categoria, liste uma entrada por linha, da data mais antiga para a mais recente. Formate cada linha assim:",
+    "[YYYY-MM-DD] - Conteúdo da entrada aqui.",
+    "Se a data não for conhecida, use [unknown].",
+    "Saída:",
+    "Coloque toda a exportação em um único bloco de código para copiar com facilidade.",
+    "Depois do bloco de código, informe se este é o conjunto completo ou se ainda restam itens."] },
+  ja: { name: "日本語", p: [
+    "保存されているすべての記憶と、過去の会話から私について学んだすべての文脈をエクスポートしてください。特に指示や好みについては、可能な限り私の言葉をそのまま残してください。",
+    "カテゴリ（この順序で出力）：",
+    "**指示**：今後従うよう私が明示的に頼んだルール。トーン、形式、スタイル、「常にXをする」「Yは決してしない」、あなたの振る舞いへの修正など。会話からではなく、保存された記憶にあるルールのみを含めてください。",
+    "**プロフィール**：名前、年齢、居住地、学歴、家族、人間関係、言語、個人的な興味。",
+    "**キャリア**：現在と過去の役職、会社、一般的なスキル分野。",
+    "**プロジェクト**：私が実際に作った、または取り組むと決めたプロジェクト。原則としてプロジェクトごとに1件。内容、現在の状況、重要な決定を含めてください。項目の最初の言葉にはプロジェクト名か短い説明を使ってください。",
+    "**好み**：広く当てはまる意見、嗜好、仕事のスタイルの好み。",
+    "形式：",
+    "各カテゴリに見出しを付けてください。各カテゴリ内では、1行につき1項目とし、日付の古い順に並べてください。各行は次の形式にしてください：",
+    "[YYYY-MM-DD] - ここに項目の内容。",
+    "日付が不明な場合は [unknown] を使ってください。",
+    "出力：",
+    "コピーしやすいように、エクスポート全体を1つのコードブロックにまとめてください。",
+    "コードブロックの後に、これが完全なセットか、まだ残りがあるかを述べてください。"] },
+  ko: { name: "한국어", p: [
+    "저장된 모든 기억과 이전 대화에서 나에 대해 알게 된 모든 맥락을 내보내 주세요. 특히 지침과 선호 사항은 가능한 한 내 표현 그대로 유지해 주세요.",
+    "카테고리 (이 순서대로 출력):",
+    "**지침**: 앞으로 따르라고 내가 명시적으로 요청한 규칙 — 어조, 형식, 스타일, \"항상 X를 해라\", \"절대 Y를 하지 마라\", 그리고 당신의 행동에 대한 교정. 대화가 아니라 저장된 기억에 있는 규칙만 포함하세요.",
+    "**신상**: 이름, 나이, 거주지, 학력, 가족, 인간관계, 언어, 개인적인 관심사.",
+    "**경력**: 현재와 과거의 직책, 회사, 일반적인 기술 분야.",
+    "**프로젝트**: 내가 실제로 만들었거나 참여하기로 한 프로젝트. 가급적 프로젝트당 항목 하나. 무엇을 하는지, 현재 상태, 주요 결정을 포함하세요. 항목의 첫 단어로 프로젝트 이름이나 짧은 설명을 사용하세요.",
+    "**선호**: 폭넓게 적용되는 의견, 취향, 작업 방식 선호.",
+    "형식:",
+    "각 카테고리에 섹션 제목을 사용하세요. 각 카테고리 안에서는 한 줄에 항목 하나씩, 오래된 날짜 순으로 나열하세요. 각 줄은 다음 형식으로 작성하세요:",
+    "[YYYY-MM-DD] - 여기에 항목 내용.",
+    "날짜를 알 수 없으면 [unknown]을 사용하세요.",
+    "출력:",
+    "복사하기 쉽도록 전체 내보내기를 하나의 코드 블록으로 감싸 주세요.",
+    "코드 블록 뒤에, 이것이 전체 세트인지 아직 남은 것이 있는지 알려 주세요."] },
+  zh: { name: "中文", p: [
+    "请导出你存储的关于我的所有记忆，以及你从过去的对话中了解到的关于我的所有背景信息。尽可能保留我的原话，尤其是指令和偏好。",
+    "类别（按此顺序输出）：",
+    "**指令**：我明确要求你今后遵守的规则——语气、格式、风格、“总是做X”、“绝不做Y”，以及对你行为的纠正。只包含来自已存储记忆的规则，不要包含来自对话的内容。",
+    "**身份**：姓名、年龄、所在地、教育背景、家庭、人际关系、语言和个人兴趣。",
+    "**职业**：当前和过去的职位、公司，以及一般技能领域。",
+    "**项目**：我真正构建或投入过的项目。最好每个项目只有一条记录。包括它的功能、当前状态和关键决定。条目的开头请使用项目名称或简短描述。",
+    "**偏好**：普遍适用的观点、品味和工作方式偏好。",
+    "格式：",
+    "为每个类别使用章节标题。在每个类别内，每行列出一条记录，按日期从旧到新排序。每行格式如下：",
+    "[YYYY-MM-DD] - 此处为记录内容。",
+    "如果不知道日期，请使用 [unknown]。",
+    "输出：",
+    "请将整个导出内容放在一个代码块中，方便复制。",
+    "在代码块之后，说明这是完整的集合，还是仍有剩余。"] },
+  ar: { name: "العربية", p: [
+    "صدِّر جميع ذكرياتي المخزَّنة وأي سياق تعلمته عني من المحادثات السابقة. احتفظ بكلماتي حرفيًا قدر الإمكان، خاصة في التعليمات والتفضيلات.",
+    "الفئات (بهذا الترتيب):",
+    "**التعليمات**: القواعد التي طلبت منك صراحةً اتباعها من الآن فصاعدًا — النبرة والتنسيق والأسلوب و\"افعل دائمًا كذا\" و\"لا تفعل أبدًا كذا\" وتصحيحات سلوكك. ضمّن فقط القواعد الموجودة في الذكريات المخزَّنة، وليس من المحادثات.",
+    "**الهوية**: الاسم والعمر والموقع والتعليم والعائلة والعلاقات واللغات والاهتمامات الشخصية.",
+    "**المسيرة المهنية**: الوظائف والشركات الحالية والسابقة ومجالات المهارة العامة.",
+    "**المشاريع**: المشاريع التي بنيتها أو التزمت بها فعلًا. يُفضَّل إدخال واحد لكل مشروع. اذكر ما يفعله وحالته الحالية وأي قرارات رئيسية. استخدم اسم المشروع أو وصفًا قصيرًا ككلمات أولى للإدخال.",
+    "**التفضيلات**: الآراء والأذواق وتفضيلات أسلوب العمل التي تنطبق بشكل عام.",
+    "التنسيق:",
+    "استخدم عناوين أقسام لكل فئة. داخل كل فئة، اكتب إدخالًا واحدًا في كل سطر، مرتبة من أقدم تاريخ. نسِّق كل سطر هكذا:",
+    "[YYYY-MM-DD] - محتوى الإدخال هنا.",
+    "إذا لم يكن التاريخ معروفًا، فاستخدم [unknown].",
+    "المخرجات:",
+    "ضع التصدير بالكامل في كتلة شيفرة واحدة لسهولة النسخ.",
+    "بعد كتلة الشيفرة، وضّح هل هذه المجموعة كاملة أم لا يزال هناك المزيد."] },
+  ru: { name: "Русский", p: [
+    "Экспортируй все мои сохранённые воспоминания и любой контекст обо мне, который ты узнал из прошлых разговоров. По возможности сохраняй мои слова дословно, особенно в инструкциях и предпочтениях.",
+    "Категории (в таком порядке):",
+    "**Инструкции**: Правила, которым я прямо просил тебя следовать в дальнейшем: тон, формат, стиль, «всегда делай X», «никогда не делай Y» и поправки к твоему поведению. Включай только правила из сохранённых воспоминаний, а не из разговоров.",
+    "**Личность**: Имя, возраст, местоположение, образование, семья, отношения, языки и личные интересы.",
+    "**Карьера**: Текущие и прошлые должности, компании и общие области навыков.",
+    "**Проекты**: Проекты, которые я реально создавал или которым посвятил себя. В идеале ОДНА запись на проект. Укажи, что он делает, текущий статус и ключевые решения. Начинай запись с названия проекта или краткого описания.",
+    "**Предпочтения**: Мнения, вкусы и предпочтения в стиле работы, которые применимы в целом.",
+    "Формат:",
+    "Используй заголовки разделов для каждой категории. В каждой категории указывай по одной записи в строке, начиная с самой ранней даты. Оформляй каждую строку так:",
+    "[YYYY-MM-DD] - Содержание записи здесь.",
+    "Если дата неизвестна, используй [unknown].",
+    "Вывод:",
+    "Помести весь экспорт в один блок кода, чтобы его было удобно копировать.",
+    "После блока кода укажи, полный ли это набор или остались ещё записи."] },
+  hi: { name: "हिन्दी", p: [
+    "मेरी सभी सहेजी गई यादें और पिछली बातचीत से मेरे बारे में सीखा गया पूरा संदर्भ एक्सपोर्ट करो। जहाँ संभव हो मेरे शब्द ज्यों के त्यों रखो, खासकर निर्देशों और पसंद-नापसंद के लिए।",
+    "श्रेणियाँ (इसी क्रम में दिखाओ):",
+    "**निर्देश**: वे नियम जिन्हें मैंने आगे से मानने के लिए साफ़ तौर पर कहा है — लहजा, फ़ॉर्मैट, शैली, \"हमेशा X करो\", \"कभी Y मत करो\", और तुम्हारे व्यवहार में सुधार। केवल सहेजी गई यादों के नियम शामिल करो, बातचीत के नहीं।",
+    "**पहचान**: नाम, उम्र, स्थान, शिक्षा, परिवार, रिश्ते, भाषाएँ और निजी रुचियाँ।",
+    "**करियर**: वर्तमान और पिछली भूमिकाएँ, कंपनियाँ और सामान्य कौशल क्षेत्र।",
+    "**प्रोजेक्ट**: वे प्रोजेक्ट जो मैंने सचमुच बनाए या जिनके लिए प्रतिबद्ध हुआ। आदर्श रूप से हर प्रोजेक्ट की एक ही प्रविष्टि। यह क्या करता है, मौजूदा स्थिति और मुख्य निर्णय शामिल करो। प्रविष्टि के पहले शब्दों में प्रोजेक्ट का नाम या छोटा विवरण रखो।",
+    "**पसंद**: राय, रुचियाँ और काम करने के तरीके की वे पसंदें जो आम तौर पर लागू होती हैं।",
+    "फ़ॉर्मैट:",
+    "हर श्रेणी के लिए सेक्शन शीर्षक रखो। हर श्रेणी में प्रति पंक्ति एक प्रविष्टि लिखो, सबसे पुरानी तारीख़ पहले। हर पंक्ति इस रूप में हो:",
+    "[YYYY-MM-DD] - प्रविष्टि की सामग्री यहाँ।",
+    "यदि तारीख़ पता न हो तो [unknown] लिखो।",
+    "आउटपुट:",
+    "आसानी से कॉपी करने के लिए पूरा एक्सपोर्ट एक ही कोड ब्लॉक में रखो।",
+    "कोड ब्लॉक के बाद बताओ कि यह पूरा सेट है या अभी और बाकी है।"] }
+};
+function memPromptText(code){
+  const p = (MEM_PROMPTS[code] || MEM_PROMPTS.en).p;
+  return `${p[0]}\n\n## ${p[1]}\n\n1. ${p[2]}\n\n2. ${p[3]}\n\n3. ${p[4]}\n\n4. ${p[5]}\n\n5. ${p[6]}\n\n## ${p[7]}\n\n${p[8]}\n\n${p[9]}\n\n${p[10]}\n\n## ${p[11]}\n- ${p[12]}\n- ${p[13]}`;
+}
+/* Reads the other AI's answer: "[2024-05-01] - text", "- text" or "1. text" lines. Headers, code fences and the closing remark are skipped. */
+function parseMemImport(raw){
+  const out = [];
+  for (const line of String(raw).replace(/```[a-z]*/gi, "").split(/\r?\n/)){
+    const l = line.trim();
+    if (!l || /^#{1,6}\s/.test(l) || /^\*\*[^*]+\*\*:?$/.test(l)) continue;
+    let m = l.match(/^(?:[-*•]\s*)?\[[^\]]{1,24}\]\s*[-–—:]?\s*(.+)$/), text = m ? m[1] : null;
+    if (!text && (m = l.match(/^(?:[-*•]|\d+[.)])\s+(.+)$/))) text = m[1];
+    if (!text) continue;
+    text = text.replace(/\*\*/g, "").trim();
+    if (text.length >= 2) out.push(text);
+  }
+  return out;
+}
+function renderMemImport(code){
+  const sh = $("#memSheet"), cur = MEM_PROMPTS[code] ? code : (MEM_PROMPTS[cfg.lang] ? cfg.lang : "en");
+  sh.innerHTML = `
+    <div class="sheet-top"><h2>${esc(t("memImpTitle"))}</h2></div>
+    <p class="meta">${esc(t("memImpSub"))}</p>
+    <div class="imp-step"><span class="imp-n">1</span><div class="imp-body"><b>${esc(t("memImpStep1"))}</b>
+      <label class="imp-lang"><span>${esc(t("memImpLang"))}</span><select id="impLang">${Object.entries(MEM_PROMPTS).map(([k, v]) => `<option value="${k}"${k === cur ? " selected" : ""}>${esc(v.name)}</option>`).join("")}</select></label>
+      <div class="imp-prompt"><textarea id="impPrompt" readonly rows="6" spellcheck="false" aria-label="${esc(t("memImpStep1"))}"></textarea><button class="btn" type="button" id="impCopy">${ic("copy")}<span>${esc(t("copy"))}</span></button></div></div></div>
+    <div class="imp-step"><span class="imp-n">2</span><div class="imp-body"><b>${esc(t("memImpStep2"))}</b>
+      <textarea id="impPaste" rows="7" spellcheck="false" placeholder="${esc(t("memImpPaste"))}" aria-label="${esc(t("memImpStep2"))}"></textarea>
+      <p class="meta" id="impHint">&nbsp;</p></div></div>
+    <div class="sheet-actions"><button class="btn" type="button" id="impBack">${esc(t("memImpBack"))}</button><button class="btn primary" type="button" id="impAdd" disabled>${esc(t("memImpAdd"))}</button></div>`;
+  const prompt = $("#impPrompt"), paste = $("#impPaste"), hint = $("#impHint"), add = $("#impAdd");
+  const setPrompt = c => { prompt.value = memPromptText(c); prompt.dir = c === "ar" ? "rtl" : "ltr"; };
+  setPrompt(cur);
+  $("#impLang").addEventListener("change", e => setPrompt(e.target.value));
+  $("#impCopy").addEventListener("click", () => copyText(prompt.value));
+  prompt.addEventListener("focus", () => prompt.select());
+  paste.addEventListener("input", () => {
+    const n = parseMemImport(paste.value).length;
+    add.disabled = !n; hint.textContent = n ? t("memImpFound", { n }) : (paste.value.trim() ? t("memImpNone") : " ");
+  });
+  $("#impBack").addEventListener("click", renderMemories);
+  add.addEventListener("click", () => {
+    const items = parseMemImport(paste.value); let added = 0;
+    for (const x of items) if (addMemory(x, "import")) added++;
+    toast(t("memImpDone", { n: added, d: items.length - added }));
+    renderMemories();
+  });
+}
+
 
 /* ================= capabilities changed ================= */
 function onCapsChanged(){
