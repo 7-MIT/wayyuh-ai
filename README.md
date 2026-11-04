@@ -48,3 +48,10 @@ Pengaturan yang perlu ada di dashboard Supabase supaya pendaftaran dan tautan em
 ## Model Fast dan Pro
 
 Tombol model di kotak chat menawarkan **Fast** dan **Pro**. Aplikasi mengikuti server: jika jawaban status (GET) atau ping server memuat daftar `models` (array string, atau objek dengan `id`, `label`, `description`, `model`), daftar itu yang dipakai. Jika tidak, aplikasi memakai dua id standar, `fast` dan `pro`, dan mengirim id yang dipilih sebagai field `model` di setiap permintaan. Bila server menolak model dengan error 400 yang menyebut "model", aplikasi kembali ke model pertama dan memberi tahu pengguna.
+
+## Unggah media dan berkas
+
+- **Unggah media** (ikon gambar): gambar (diperkecil di perangkat) dan video. Video dikirim sebagai 6 cuplikan gambar berurutan dan suaranya tidak ikut. Video hingga 300 MB, selama browser bisa membukanya.
+- **Unggah berkas** (ikon klip): semua jenis berkas. Server hanya membaca gambar secara langsung, jadi sisanya dibaca di browser lalu dikirim sebagai teks: teks dan kode, PDF (teks per halaman, atau 3 halaman pertama sebagai gambar bila hasil pindai), Word, PowerPoint, Excel, OpenDocument, RTF, isi ZIP/EPUB, dan teks mentah dari berkas biner. Audio dan biner yang tidak terbaca hanya dikirim nama dan ukurannya. Dokumen hingga 60 MB.
+- Server membaca sekitar 30.000 karakter per pesan, jadi isi berkas dipotong (16.000 karakter per berkas, 24.000 per pesan) dan diberi tanda "dipotong". Maksimal 8 lampiran per pesan. Bisa juga dengan seret-lepas atau tempel (paste).
+- Pustaka PDF dan ZIP (pdf.js dan JSZip dari cdnjs) dimuat hanya saat dibutuhkan.

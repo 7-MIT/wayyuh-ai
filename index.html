@@ -502,6 +502,9 @@ kbd{font:500 11px var(--mono);color:var(--faint);border:1px solid var(--line-2);
 .mem-add input{flex:1;min-width:0;border:1px solid var(--line-2);background:var(--surface);border-radius:10px;padding:9px 12px;outline:none}
 .mem-add input:focus{border-color:var(--accent)}
 html .shell #modelBtn,html #modelBtn{width:auto;min-width:38px;max-width:none}
+.file-chip.busy{opacity:.7}
+.file-chip.busy .sz{animation:wyBlink 1.2s ease-in-out infinite}
+@keyframes wyBlink{50%{opacity:.35}}
 #modelBtn{margin-left:14px;gap:6px;padding:0 10px 0 9px;height:34px;border:1px solid var(--hx-line2);border-radius:999px;background:var(--hx-hover);flex:none}
 #modelBtn:hover{border-color:var(--hx-accent)}
 #modelBtn svg:first-child{color:var(--hx-accent)}
@@ -2212,7 +2215,7 @@ html.has-photo[data-theme="light"] .welcome .hx-title .l2{background-image:linea
                 <button type="button" class="tool" id="attachBtn"><i data-ic="clip"></i></button>
                 <button type="button" class="tool" id="imageBtn"><i data-ic="image"></i></button>
                 <button type="button" class="tool plus" id="plusBtn" data-i18n-aria="plusMenu"><i data-ic="plus"></i></button>
-                <input type="file" id="fileInput" multiple hidden accept="image/*,application/pdf,.txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.java,.kt,.c,.cpp,.cs,.go,.rs,.php,.rb,.sql,.xml,.yaml,.yml">
+                <input type="file" id="fileInput" multiple hidden>
                 <button type="button" class="tool" id="searchBtn" aria-pressed="false"><i data-ic="globe"></i><span class="lbl" data-i18n="webSearch">Cari web</span></button>
                 <button type="button" class="tool" id="modelBtn"><i data-ic="sparkle"></i><span class="lbl" id="modelLbl">Fast</span><i data-ic="chevron"></i></button>
                 <button type="button" class="tool slash" id="slashBtn" data-i18n-aria="tools">/</button>
@@ -2425,7 +2428,7 @@ const I18N = {
     wsSuggest: "Buka di Workspace",
     exportMd: "Markdown (.md)", exportTxt: "Teks (.txt)", exportHtml: "HTML (.html)", exportEmpty: "Belum ada percakapan untuk diekspor.",
     attachTypesImg: "Foto (JPG, PNG, WEBP)", fileTooBig: "File terlalu besar. Maksimal {max}.", fileUnsupported: "Jenis file ini belum didukung.",
-    filesNeedServer: "Server saat ini belum bisa membaca foto atau PDF. Perbarui fungsi intellegence-7mit-public ke versi 2.",
+    filesNeedServer: "Server saat ini belum bisa membaca gambar dan video.",
     maxFiles: "Maksimal {n} lampiran per pesan.",
     needServer: "Butuh server versi 2", modelFast: "Fast", modelPro: "Pro", modelOnly: "Satu mode tersedia", modelFallback: "Server belum menerima model itu, kembali ke model pertama.",
     modelFastD: "Jawaban cepat untuk keseharian", modelProD: "Lebih teliti untuk soal sulit dan analisis mendalam",
@@ -2449,7 +2452,7 @@ const I18N = {
     sgWeekend: "Kasih ide kegiatan seru untuk akhir pekan ini", sgMem: "Beri saran yang cocok berdasarkan hal yang kamu ingat tentangku", sgWrite: "Bantu aku menulis pesan yang sopan dan jelas",
     exploreT: "Jelajahi", exploreSub: "Semua alat Wayyuh AI ada di sini. Pilih satu untuk memulai.",
     keysT: "Pintasan keyboard", keysSub: "Di iPad, pakai keyboard fisik. ⌘ di Mac/iPad, Ctrl di Windows.", k_send: "Kirim pesan", k_newline: "Baris baru", k_tools: "Buka daftar alat", k_search: "Cari di riwayat chat", k_new: "Percakapan baru", k_esc: "Tutup jendela atau hentikan jawaban",
-    imgNeedServer: "Upload gambar belum didukung server Wayyuh AI saat ini.", attachImage: "Upload gambar", attachFile: "Lampirkan file teks",
+    imgNeedServer: "Unggah gambar dan video belum didukung server Wayyuh AI saat ini.", attachImage: "Unggah media", attachFile: "Unggah berkas", fileBusy: "memproses…", fileReadFail: "Tidak bisa membaca {name}.",
     phn_pagi: "Cahaya Pagi", phn_siang: "Siang Cerah", phn_sore: "Senja", phn_malam: "Tengah Malam", footVer: "Versi 2.5",
     themeTitle: "Tampilan", themeCustom: "Custom", themeNowManual: "Dipilih manual", tpScene: "Suasana", tpAccent: "Warna aksen",
     ph_pagi: "Pagi", ph_siang: "Siang", ph_sore: "Sore", ph_malam: "Malam",
@@ -2524,7 +2527,7 @@ const I18N = {
     wsSuggest: "Open in Workspace",
     exportMd: "Markdown (.md)", exportTxt: "Text (.txt)", exportHtml: "HTML (.html)", exportEmpty: "Nothing to export yet.",
     attachTypesImg: "Photos (JPG, PNG, WEBP)", fileTooBig: "File too large. Maximum {max}.", fileUnsupported: "This file type isn't supported yet.",
-    filesNeedServer: "The current server can't read photos or PDFs yet. Update the intellegence-7mit-public function to version 2.",
+    filesNeedServer: "The current server can't read images and video yet.",
     maxFiles: "Up to {n} attachments per message.",
     needServer: "Needs server v2", modelFast: "Fast", modelPro: "Pro", modelOnly: "One mode available", modelFallback: "The server doesn't accept that model yet, so the first model is used.",
     modelFastD: "Quick answers for everyday questions", modelProD: "More careful for hard problems and deeper analysis",
@@ -2548,7 +2551,7 @@ const I18N = {
     sgWeekend: "Give me fun ideas for this weekend", sgMem: "Suggest something based on what you remember about me", sgWrite: "Help me write a polite, clear message",
     exploreT: "Explore", exploreSub: "All of Wayyuh AI's tools in one place. Pick one to start.",
     keysT: "Keyboard shortcuts", keysSub: "On iPad, use a hardware keyboard. ⌘ on Mac/iPad, Ctrl on Windows.", k_send: "Send message", k_newline: "New line", k_tools: "Open the tool list", k_search: "Search chat history", k_new: "New conversation", k_esc: "Close a window or stop an answer",
-    imgNeedServer: "Image upload isn't supported by Wayyuh AI's server yet.", attachImage: "Upload image", attachFile: "Attach a text file",
+    imgNeedServer: "Image and video upload isn't supported by Wayyuh AI's server yet.", attachImage: "Upload media", attachFile: "Upload files", fileBusy: "processing…", fileReadFail: "Couldn't read {name}.",
     phn_pagi: "Morning Glow", phn_siang: "Daylight", phn_sore: "Sunset", phn_malam: "Midnight", footVer: "Version 2.5",
     themeTitle: "Appearance", themeCustom: "Custom", themeNowManual: "Set manually", tpScene: "Scene", tpAccent: "Accent color",
     ph_pagi: "Morning", ph_siang: "Midday", ph_sore: "Evening", ph_malam: "Night",
@@ -3476,7 +3479,7 @@ const modelDesc = m => m.desc || (isPro(m) ? t("modelProD") : /^fast$/i.test(m.i
 let caps = Object.assign({}, V1_CAPS, store.get("caps", null) || {});
 let capsState = "checking";
 const v2 = () => caps.version >= 2;
-const canFile = mime => v2() && Array.isArray(caps.files) && caps.files.includes(mime);
+const canFile = mime => (!!caps.attach && /^image\//.test(mime)) || (v2() && Array.isArray(caps.files) && caps.files.includes(mime));
 function reqHeaders(){
   const h = { "Content-Type": "application/json" };
   if (SERVER_KEY){ h.Authorization = "Bearer " + SERVER_KEY; h.apikey = SERVER_KEY; }
@@ -3497,6 +3500,7 @@ async function probeCaps(){
     try{
       const g = await fetch(SERVER_URL, { headers: reqHeaders() }).then(x => x.json());
       const ms = pickModels(g); if (ms) caps = Object.assign({}, caps, { models: ms });
+      if (Number(g && g.ai_version) >= 6) caps = Object.assign({}, caps, { attach: true, maxMessage: 28000, maxFiles: MAX_PENDING });   // this server takes images as `attachments` and reads about 30,000 characters per message
     }catch(e){}
     if (!Array.isArray(caps.models) || !caps.models.length) caps.models = MODEL_DEFAULTS;
     store.set("caps", caps);
@@ -3603,7 +3607,7 @@ async function requestAI(body, { signal, onDelta, timeout = 60000 } = {}){
 function buildBody({ prompt, history, files = [], mode = "chat", search = false, digest = "" }){
   if (v2()){
     return { message: prompt, history, context: contextBlock({ digest }), mode, model: cfg.model, search: !!(search && caps.search), stream: !!caps.stream,
-      files: files.map(f => ({ mime: f.mime, data: f.b64 })) };
+      files: expandFiles(files).map(f => ({ mime: f.mime, data: f.b64 })) };
   }
   // v1: only message + history (last 6); context has to travel inside the message, 4000 characters in total
   const max = caps.maxMessage || 4000;
@@ -3611,7 +3615,10 @@ function buildBody({ prompt, history, files = [], mode = "chat", search = false,
   let ctx = contextBlock({ compact: true, digest: digest.slice(0, 300) });
   if (ctx.length + prompt.length + 4 > max) ctx = ctx.split("\n").filter(l => !l.startsWith("- ")).join("\n");
   if (ctx.length + prompt.length + 4 > max) ctx = "";
-  return { message: (ctx ? ctx + "\n\n" : "") + prompt, history: history.slice(-6).map(h => ({ role: h.role, content: h.content.slice(0, 2000) })), mode, model: cfg.model };
+  const body = { message: (ctx ? ctx + "\n\n" : "") + prompt, history: history.slice(-6).map(h => ({ role: h.role, content: h.content.slice(0, 2000) })), mode, model: cfg.model };
+  const imgs = expandFiles(files).slice(0, 16);
+  if (caps.attach && imgs.length) body.attachments = imgs.map(f => ({ mime: f.mime, data: f.b64, name: f.name }));
+  return body;
 }
 // short list of the older questions that no longer fit in the history sent with a request (no extra request needed)
 function olderDigest(chat, entryId, sent){
@@ -5221,7 +5228,7 @@ function fileChips(files){
   const row = document.createElement("div"); row.className = "files";
   for (const f of files){
     const chip = document.createElement("span"); chip.className = "file-chip";
-    chip.innerHTML = f.thumb ? `<img alt="">` : `<span class="fi">${ic(f.mime === "application/pdf" || f.kind === "text" ? "file" : "image")}</span>`;
+    chip.innerHTML = f.thumb ? `<img alt="">` : `<span class="fi">${ic(f.kind === "image" || f.kind === "video" ? "image" : "file")}</span>`;
     if (f.thumb) chip.querySelector("img").src = f.thumb;
     const nm = document.createElement("span"); nm.innerHTML = `<span class="nm"></span><span class="sz"></span>`; nm.style.display = "flex"; nm.style.flexDirection = "column"; nm.style.minWidth = "0";
     nm.querySelector(".nm").textContent = f.name; nm.querySelector(".sz").textContent = f.size ? fmtBytes(f.size) : "";
@@ -5525,7 +5532,8 @@ function send(raw, opts = {}){
     if (c === "riwayat") openSidebar(true); else if (c === "memori") openMemory(); else newChat();
     return;
   }
-  const bin = files.filter(f => f.kind !== "text"), txt = files.filter(f => f.kind === "text");
+  if (files.some(f => f.busy)){ toast(L("Berkas masih diproses, tunggu sebentar.", "A file is still being processed, one moment."), "err"); return; }
+  const bin = files.filter(f => f.kind === "image" || f.frames), txt = files.filter(f => typeof f.text === "string");
   const meta = files.map(f => ({ name: f.name, mime: f.mime, size: f.size, kind: f.kind, thumb: f.thumb }));
   const quizM = text.match(/^\/(latihan|kuis|practice|quiz)\b\s*([\s\S]*)$/i);
   enterChat(() => {
@@ -5540,7 +5548,8 @@ function send(raw, opts = {}){
     }
     const entry = addUser(text || L("(lampiran)", "(attachment)"), { files: meta });
     if (bin.length) sessionFiles.set(entry.id, bin);
-    const fileText = txt.map(f => `\n\n--- ${f.name} ---\n\`\`\`\n${f.text}\n\`\`\``).join("");
+    let left = FILE_TOTAL, fileText = "";
+    for (const f of txt){ const body = f.text.slice(0, Math.max(0, Math.min(left, FILE_CHARS))); left -= body.length; fileText += `\n\n--- ${f.name}${f.cut || body.length < f.text.length ? " (" + L("dipotong", "truncated") + ")" : ""} ---\n\`\`\`\n${body}\n\`\`\``; }
     dispatch(text, entry, { bin, fileText });
   });
 }
@@ -5561,7 +5570,7 @@ function dispatch(text, entry, { bin = [], fileText = "" } = {}){
   }
   const nat = text.match(/^(?:tolong\s+)?(?:ingat(?:lah)?|remember)[,\s]+(?:ya[,\s]+|bahwa\s+|kalau\s+|that\s+)?([\s\S]{3,})$/i);
   if (nat){ const saved = nat[1].split("\n")[0].trim(); if (addMemory(saved, "manual")){ memNote(entry._el, [saved]); entry.memo = saved; saveChats(); } }
-  const prompt = (text || (bin.length ? L("Jelaskan isi lampiran ini.", "Describe what's in this attachment.") : "")) + fileText;
+  const prompt = (text || (bin.length ? L("Jelaskan isi lampiran ini.", "Describe what's in this attachment.") : fileText ? L("Rangkum isi berkas ini.", "Summarize this file.") : "")) + fileText;
   askAI(prompt, { entry, files: bin, search: cfg.search });
 }
 
@@ -5592,17 +5601,18 @@ function updateSend(){
     sendBtn.innerHTML = ic(isStop ? "stop" : "arrowUp");
     const label = isStop ? t("stop") : t("send"); sendBtn.setAttribute("aria-label", label); sendBtn.title = label;
   }
-  sendBtn.disabled = !isStop && !input.value.trim() && !pending.length;
+  sendBtn.disabled = !isStop && ((!input.value.trim() && !pending.length) || pending.some(f => f.busy));
 }
 function clearComposer(){ input.value = ""; pending = []; renderTray(); autosize(); setPal(false); updateSend(); }
 function renderTray(){
   const tray = $("#tray"); tray.innerHTML = ""; tray.hidden = !pending.length;
   for (const f of pending){
     const chip = document.createElement("span"); chip.className = "file-chip";
-    chip.innerHTML = (f.thumb ? `<img alt="">` : `<span class="fi">${ic(f.kind === "image" ? "image" : "file")}</span>`) +
+    if (f.busy) chip.classList.add("busy");
+    chip.innerHTML = (f.thumb ? `<img alt="">` : `<span class="fi">${ic(f.kind === "image" || f.kind === "video" ? "image" : "file")}</span>`) +
       `<span style="display:flex;flex-direction:column;min-width:0"><span class="nm"></span><span class="sz"></span></span><button class="x" type="button">${ic("close")}</button>`;
     if (f.thumb) chip.querySelector("img").src = f.thumb;
-    chip.querySelector(".nm").textContent = f.name; chip.querySelector(".sz").textContent = fmtBytes(f.size);
+    chip.querySelector(".nm").textContent = f.name; chip.querySelector(".sz").textContent = f.busy ? t("fileBusy") : fmtBytes(f.size) + (f.kind === "video" ? " · " + L("video", "video") : "") + (f.cut ? " · " + L("dipotong", "truncated") : "");
     const x = chip.querySelector(".x"); x.setAttribute("aria-label", t("del") + " " + f.name);
     x.addEventListener("click", () => { pending = pending.filter(p => p !== f); renderTray(); updateSend(); input.focus(); });
     tray.appendChild(chip);
@@ -5627,36 +5637,198 @@ async function scaleImage(file){
     return { full: draw(1600, .85), thumb: draw(200, .7) };
   } finally { URL.revokeObjectURL(url); }
 }
-const TEXT_ACCEPT = ".txt,.md,.csv,.json,.js,.ts,.py,.html,.css,.java,.kt,.c,.cpp,.cs,.go,.rs,.php,.rb,.sql,.xml,.yaml,.yml,text/*";
-const FILE_ACCEPT = "image/*,application/pdf," + TEXT_ACCEPT;
-async function addFiles(list){
-  const maxBin = caps.maxFiles || 4;
-  for (const file of list){
-    if (pending.length >= 6 || (file.type.startsWith("image/") || file.type === "application/pdf") && pending.filter(f => f.kind !== "text").length >= maxBin){ toast(t("maxFiles", { n: maxBin }), "err"); break; }
-    const isText = file.type.startsWith("text/") || file.type === "application/json" || TEXT_EXT.test(file.name);
-    try{
-      if (file.type.startsWith("image/")){
-        if (!canFile("image/jpeg")){ toast(t("filesNeedServer"), "err"); continue; }
-        if (file.size > 20e6){ toast(t("fileTooBig", { max: "20 MB" }), "err"); continue; }
-        let full, thumb, mime = "image/jpeg";
-        try{ ({ full, thumb } = await scaleImage(file)); }
-        catch(e){
-          if (!canFile(file.type)){ toast(t("fileUnsupported"), "err"); continue; }
-          full = await readAs(file); thumb = ""; mime = file.type;
-        }
-        pending.push({ kind: "image", name: file.name, mime, size: Math.round((full.length - full.indexOf(",") - 1) * .75), b64: full.split(",")[1], thumb });
-      } else if (file.type === "application/pdf"){
-        if (!canFile("application/pdf")){ toast(t("filesNeedServer"), "err"); continue; }
-        if (file.size > 7e6){ toast(t("fileTooBig", { max: "7 MB" }), "err"); continue; }
-        const d = await readAs(file);
-        pending.push({ kind: "pdf", name: file.name, mime: "application/pdf", size: file.size, b64: d.split(",")[1] });
-      } else if (isText){
-        if (file.size > 300e3){ toast(t("fileTooBig", { max: "300 KB" }), "err"); continue; }
-        pending.push({ kind: "text", name: file.name, mime: "text/plain", size: file.size, text: (await readAs(file, "text")).slice(0, v2() ? 60000 : 3000) });
-      } else toast(t("fileUnsupported"), "err");
-    }catch(e){ toast(t("fileUnsupported"), "err"); }
+/* ================= uploads: Media (images, video) and Files (any type) =================
+   The server reads images natively. Everything else is read here in the browser and sent as text:
+   - video      -> 6 evenly spaced frames sent as images (no audio) plus a short note
+   - PDF        -> text per page (pdf.js); a scanned PDF falls back to its first pages as images
+   - Word, PowerPoint, Excel, OpenDocument -> text (JSZip + the files' own XML)
+   - ZIP / EPUB -> file list plus the text files inside
+   - text, code, data, RTF -> as text; unknown binaries -> the readable strings in them, or just name and size */
+const LIBS = {
+  jszip: ["https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js", "JSZip"],
+  pdfjs: ["https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js", "pdfjsLib"]
+};
+const PDF_WORKER = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const libLoads = {};
+function loadLib(key){
+  const [src, glob] = LIBS[key];
+  if (window[glob]) return Promise.resolve(window[glob]);
+  return libLoads[key] || (libLoads[key] = new Promise((res, rej) => {
+    const s = document.createElement("script"); s.src = src;
+    s.onload = () => res(window[glob]); s.onerror = () => { delete libLoads[key]; rej(new Error("lib " + key)); };
+    document.head.appendChild(s);
+  }));
+}
+const FILE_CHARS = 16000, FILE_TOTAL = 24000, MAX_UPLOAD = 300e6, MAX_PENDING = 8;
+const clipText = (s, n = FILE_CHARS) => { s = String(s || "").replace(/\u0000/g, "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim(); return s.length > n ? { text: s.slice(0, n), cut: true } : { text: s, cut: false }; };
+const unEnt = s => String(s).replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, 16))).replace(/&amp;/g, "&");
+const stripTags = s => unEnt(String(s).replace(/<[^>]+>/g, ""));
+const OFFICE_EXT = /\.(docx|dotx|pptx|ppsx|xlsx|xlsm|odt|ods|odp|ott)$/i, ZIP_EXT = /\.(zip|epub|jar|apk|7z)$/i;
+const INSIDE_TEXT = /\.(txt|md|csv|tsv|json|xml|html?|xhtml|svg|css|js|ts|py|java|c|h|cpp|cs|go|rs|php|rb|sql|ya?ml|toml|ini|log|sh|opf|ncx)$/i;
+
+function printableStrings(buf, min = 8){
+  const out = []; let run = [];
+  const flush = () => { if (run.length >= min) out.push(String.fromCharCode(...run)); run = []; };
+  for (let i = 0; i < buf.length && out.join("\n").length < 60000; i++){ const c = buf[i]; if ((c >= 32 && c < 127) || c === 9) run.push(c); else flush(); }
+  flush();
+  const u16 = []; run = [];
+  for (let i = 0; i + 1 < buf.length && u16.join("\n").length < 60000; i += 2){ const c = buf[i], h = buf[i + 1]; if (h === 0 && ((c >= 32 && c < 127) || c === 9)) run.push(c); else { if (run.length >= min) u16.push(String.fromCharCode(...run)); run = []; } }
+  if (run.length >= min) u16.push(String.fromCharCode(...run));
+  return (u16.join("\n").length > out.join("\n").length ? u16 : out).join("\n");
+}
+function decodesAsText(buf){
+  const sample = buf.subarray(0, 32768); let nul = 0; for (const b of sample) if (b === 0) nul++;
+  if (nul > 0) return false;
+  try{ new TextDecoder("utf-8", { fatal: true }).decode(sample.length < buf.length ? sample.subarray(0, sample.length - 3) : sample); return true; }catch(e){ return false; }
+}
+function rtfToText(s){
+  for (const key of ["fonttbl", "colortbl", "stylesheet", "info", "generator"]){   // drop whole groups that hold no text
+    for (let at = s.indexOf("{\\" + key); at >= 0; at = s.indexOf("{\\" + key)){
+      let depth = 0, i = at; for (; i < s.length; i++){ if (s[i] === "{") depth++; else if (s[i] === "}" && --depth === 0) break; }
+      s = s.slice(0, at) + s.slice(i + 1);
+    }
   }
-  renderTray(); updateSend(); input.focus();
+  return s.replace(/\\par[d]?/g, "\n").replace(/\\tab/g, "\t").replace(/\\'([0-9a-f]{2})/gi, (m, h) => String.fromCharCode(parseInt(h, 16))).replace(/\{\\\*[^{}]*\}/g, "").replace(/\\[a-z]+-?\d* ?/gi, "").replace(/[{}]/g, "");
+}
+async function readZipDoc(file){
+  const JSZip = await loadLib("jszip"), zip = await JSZip.loadAsync(file), names = Object.keys(zip.files).filter(n => !zip.files[n].dir);
+  const get = n => zip.file(n).async("string");
+  if (/\.(docx|dotx)$/i.test(file.name) || names.includes("word/document.xml")){
+    const xml = await get("word/document.xml");
+    return stripTags(xml.replace(/<w:tab\/>/g, "\t").replace(/<w:br[^>]*\/>/g, "\n").replace(/<\/w:p>/g, "\n"));
+  }
+  if (/\.(pptx|ppsx)$/i.test(file.name) || names.some(n => /^ppt\/slides\/slide\d+\.xml$/.test(n))){
+    const slides = names.filter(n => /^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a, b) => parseInt(a.match(/(\d+)\.xml/)[1]) - parseInt(b.match(/(\d+)\.xml/)[1]));
+    const out = []; for (let i = 0; i < slides.length; i++){ const xml = await get(slides[i]); out.push(`## Slide ${i + 1}\n` + stripTags(xml.replace(/<\/a:p>/g, "\n"))); }
+    return out.join("\n\n");
+  }
+  if (/\.(xlsx|xlsm)$/i.test(file.name) || names.includes("xl/workbook.xml")){
+    const shared = names.includes("xl/sharedStrings.xml") ? [...(await get("xl/sharedStrings.xml")).matchAll(/<si>([\s\S]*?)<\/si>/g)].map(m => stripTags(m[1])) : [];
+    const sheetNames = names.includes("xl/workbook.xml") ? [...(await get("xl/workbook.xml")).matchAll(/<sheet [^>]*name="([^"]*)"/g)].map(m => unEnt(m[1])) : [];
+    const sheets = names.filter(n => /^xl\/worksheets\/sheet\d+\.xml$/.test(n)).sort((a, b) => parseInt(a.match(/(\d+)\.xml/)[1]) - parseInt(b.match(/(\d+)\.xml/)[1]));
+    const col = ref => { let n = 0; for (const ch of ref.replace(/\d+/g, "")) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
+    const out = [];
+    for (let i = 0; i < sheets.length; i++){
+      const xml = await get(sheets[i]), rows = [];
+      for (const rm of xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)){
+        if (rows.length >= 300) break; const cells = [];
+        for (const cm of rm[1].matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)){
+          const ref = (cm[1].match(/\br="([A-Z]+\d+)"/) || [])[1], type = (cm[1].match(/\bt="(\w+)"/) || [])[1], body = cm[2] || "";
+          let v = (body.match(/<v>([\s\S]*?)<\/v>/) || [])[1];
+          if (type === "s" && v != null) v = shared[+v]; else if (type === "inlineStr") v = stripTags((body.match(/<is>([\s\S]*?)<\/is>/) || [])[1] || ""); else if (v != null) v = unEnt(v);
+          if (ref && v != null && v !== "") cells[Math.min(col(ref), 39)] = String(v).replace(/[\t\n]/g, " ");
+        }
+        if (cells.length) rows.push(Array.from(cells, c => c == null ? "" : c).join("\t"));
+      }
+      out.push(`## ${sheetNames[i] || "Sheet " + (i + 1)}\n` + rows.join("\n"));
+    }
+    return out.join("\n\n");
+  }
+  if (names.includes("content.xml") && /^application\/vnd\.oasis|\.(odt|ods|odp|ott)$/i.test((file.type || "") + file.name)){
+    const xml = await get("content.xml");
+    return stripTags(xml.replace(/<text:tab\/>/g, "\t").replace(/<\/text:(p|h)>/g, "\n").replace(/<\/table:table-cell>/g, "\t").replace(/<\/table:table-row>/g, "\n"));
+  }
+  // any other archive: the list, then the text files inside
+  const list = names.slice(0, 200).map(n => `${n}  (${fmtBytes(zip.files[n]._data && zip.files[n]._data.uncompressedSize || 0)})`);
+  let out = `Isi arsip (${names.length} berkas):\n` + list.join("\n"), left = 12000;
+  for (const n of names.filter(n => INSIDE_TEXT.test(n)).slice(0, 12)){
+    if (left <= 0) break; const body = (await get(n)).slice(0, Math.min(5000, left)); left -= body.length; out += `\n\n--- ${n} ---\n${body}`;
+  }
+  return out;
+}
+async function pdfRead(file){
+  const lib = await loadLib("pdfjs"); lib.GlobalWorkerOptions.workerSrc = PDF_WORKER;
+  const pdf = await lib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise, pages = Math.min(pdf.numPages, 80);
+  let text = "";
+  for (let p = 1; p <= pages && text.length < FILE_CHARS + 2000; p++){
+    const tc = await (await pdf.getPage(p)).getTextContent(); let line = "";
+    for (const it of tc.items){ line += it.str + (it.hasEOL ? "\n" : " "); }
+    text += `\n[Halaman ${p}]\n` + line.trim();
+  }
+  const total = text.replace(/\[Halaman \d+\]|\s/g, "").length;
+  if (total < 8){   // scanned: send the first pages as images
+    const frames = [];
+    for (let p = 1; p <= Math.min(3, pdf.numPages); p++){
+      const page = await pdf.getPage(p), vp0 = page.getViewport({ scale: 1 }), sc = Math.min(2, 1300 / Math.max(vp0.width, vp0.height)), vp = page.getViewport({ scale: sc });
+      const c = document.createElement("canvas"); c.width = Math.round(vp.width); c.height = Math.round(vp.height); const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+      await page.render({ canvasContext: x, viewport: vp }).promise; frames.push({ mime: "image/jpeg", b64: c.toDataURL("image/jpeg", .8).split(",")[1] });
+    }
+    return { frames, pages: pdf.numPages };
+  }
+  return { text, pages: pdf.numPages, more: pdf.numPages > pages };
+}
+function thumbFrom(canvas, max = 200){
+  const r = Math.min(1, max / Math.max(canvas.width, canvas.height)), c = document.createElement("canvas"); c.width = Math.max(1, Math.round(canvas.width * r)); c.height = Math.max(1, Math.round(canvas.height * r));
+  c.getContext("2d").drawImage(canvas, 0, 0, c.width, c.height); return c.toDataURL("image/jpeg", .7);
+}
+async function videoFrames(file, n = 6){
+  const url = URL.createObjectURL(file), v = document.createElement("video"); v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+  try{
+    await new Promise((res, rej) => { v.onloadeddata = res; v.onerror = () => rej(new Error("video")); setTimeout(() => rej(new Error("timeout")), 20000); });
+    const dur = isFinite(v.duration) ? v.duration : 0, times = !dur ? [0] : Array.from({ length: n }, (_, i) => dur * (i + .5) / n);
+    const r = Math.min(1, 960 / Math.max(v.videoWidth, v.videoHeight)), c = document.createElement("canvas"); c.width = Math.max(2, Math.round(v.videoWidth * r)); c.height = Math.max(2, Math.round(v.videoHeight * r));
+    const x = c.getContext("2d"), frames = []; let thumb = "";
+    for (const t of times){
+      await new Promise(res => { const done = () => { v.onseeked = null; res(); }; v.onseeked = done; v.currentTime = Math.min(t, Math.max(0, dur - .05)); setTimeout(done, 5000); });
+      x.drawImage(v, 0, 0, c.width, c.height); frames.push({ mime: "image/jpeg", b64: c.toDataURL("image/jpeg", .78).split(",")[1], t });
+      if (!thumb) thumb = thumbFrom(c);
+    }
+    return { frames, duration: dur, thumb, w: v.videoWidth, h: v.videoHeight };
+  } finally { URL.revokeObjectURL(url); v.removeAttribute("src"); v.load(); }
+}
+const fmtDur = s => s >= 60 ? `${Math.floor(s / 60)} mnt ${Math.round(s % 60)} dtk` : `${Math.round(s)} dtk`;
+
+/* turns one chosen file into an attachment object: { kind, name, mime, size, b64?, frames?, thumb?, text?, cut? } */
+async function readUpload(file){
+  const base = { name: file.name || "berkas", mime: file.type || "application/octet-stream", size: file.size };
+  const type = base.mime, nm = base.name;
+  if (type.startsWith("image/") && type !== "image/svg+xml"){
+    if (!canFile("image/jpeg")) throw Object.assign(new Error("need"), { toastKey: "filesNeedServer" });
+    let full, thumb, mime = "image/jpeg";
+    try{ ({ full, thumb } = await scaleImage(file)); }
+    catch(e){ if (!canFile(type)) throw Object.assign(new Error("need"), { toastKey: "fileUnsupported" }); full = await readAs(file); thumb = ""; mime = type; }
+    return { ...base, kind: "image", mime, size: Math.round((full.length - full.indexOf(",") - 1) * .75), b64: full.split(",")[1], thumb };
+  }
+  if (type.startsWith("video/") || /\.(mp4|mov|m4v|webm|ogv|mkv|avi)$/i.test(nm)){
+    if (!canFile("image/jpeg")) throw Object.assign(new Error("need"), { toastKey: "filesNeedServer" });
+    try{
+      const v = await videoFrames(file);
+      return { ...base, kind: "video", frames: v.frames, thumb: v.thumb, text: L(`Video "${nm}": durasi ${fmtDur(v.duration)}, ${v.w}×${v.h}. Video dikirim sebagai ${v.frames.length} cuplikan gambar berurutan (suaranya tidak ikut).`, `Video "${nm}": ${fmtDur(v.duration)}, ${v.w}×${v.h}. Sent as ${v.frames.length} sequential frames (no audio).`) };
+    }catch(e){
+      return { ...base, kind: "file", text: L(`Video "${nm}" (${fmtBytes(file.size)}) tidak bisa dibuka browser ini, jadi hanya nama dan ukurannya yang dikirim.`, `Video "${nm}" (${fmtBytes(file.size)}) can't be opened by this browser, so only its name and size were sent.`) };
+    }
+  }
+  if (type.startsWith("audio/")) return { ...base, kind: "file", text: L(`Audio "${nm}" (${fmtBytes(file.size)}). Suara belum bisa diproses, jadi hanya nama dan ukurannya yang dikirim.`, `Audio "${nm}" (${fmtBytes(file.size)}). Sound can't be processed yet, so only its name and size were sent.`) };
+  if (type === "application/pdf" || /\.pdf$/i.test(nm)){
+    const r = await pdfRead(file);
+    if (r.frames) return { ...base, kind: "pdf", frames: r.frames, thumb: "", text: L(`PDF "${nm}" (${r.pages} halaman) tidak berisi teks, jadi ${r.frames.length} halaman pertama dikirim sebagai gambar.`, `PDF "${nm}" (${r.pages} pages) has no text layer, so its first ${r.frames.length} pages were sent as images.`) };
+    const c = clipText(r.text); return { ...base, kind: "doc", text: c.text, cut: c.cut || r.more };
+  }
+  if (OFFICE_EXT.test(nm) || ZIP_EXT.test(nm) || type === "application/zip" || /officedocument|opendocument|epub|x-zip/.test(type)){
+    const c = clipText(await readZipDoc(file)); return { ...base, kind: "doc", text: c.text || L("(tidak ada teks yang bisa dibaca)", "(no readable text)"), cut: c.cut };
+  }
+  const buf = new Uint8Array(await file.arrayBuffer());
+  if (type === "text/rtf" || /\.rtf$/i.test(nm)){ const c = clipText(rtfToText(new TextDecoder().decode(buf))); return { ...base, kind: "text", text: c.text, cut: c.cut }; }
+  if (type.startsWith("text/") || type === "application/json" || TEXT_EXT.test(nm) || INSIDE_TEXT.test(nm) || type === "image/svg+xml" || decodesAsText(buf)){
+    const c = clipText(new TextDecoder("utf-8").decode(buf)); return { ...base, kind: "text", text: c.text, cut: c.cut };
+  }
+  const str = printableStrings(buf);
+  if (str.replace(/\s/g, "").length >= 80){ const c = clipText(str); return { ...base, kind: "doc", text: L("(teks mentah yang ditemukan di berkas biner; susunannya bisa berantakan)\n", "(raw text found inside a binary file; layout may be messy)\n") + c.text, cut: c.cut }; }
+  return { ...base, kind: "file", text: L(`Berkas "${nm}" (${type}, ${fmtBytes(file.size)}) adalah biner yang isinya tidak bisa dibaca di aplikasi, jadi hanya nama dan ukurannya yang dikirim.`, `File "${nm}" (${type}, ${fmtBytes(file.size)}) is binary and can't be read in the app, so only its name and size were sent.`) };
+}
+const expandFiles = files => (files || []).flatMap(f => f.frames ? f.frames.map((fr, i) => ({ mime: fr.mime, b64: fr.b64, name: `${f.name}-${i + 1}.jpg` })) : (f.b64 ? [f] : []));
+async function addFiles(list){
+  for (const file of list){
+    if (pending.length >= MAX_PENDING){ toast(t("maxFiles", { n: MAX_PENDING }), "err"); break; }
+    if (file.size > MAX_UPLOAD){ toast(t("fileTooBig", { max: "300 MB" }), "err"); continue; }
+    if (!/^(image|video|audio)\//.test(file.type) && file.size > 60e6){ toast(t("fileTooBig", { max: "60 MB" }), "err"); continue; }   // documents are read into memory
+    const slot = { kind: "busy", busy: true, name: file.name || "berkas", mime: file.type, size: file.size };
+    pending.push(slot); renderTray(); updateSend();
+    try{ Object.assign(slot, await readUpload(file), { busy: false }); }
+    catch(e){ pending = pending.filter(p => p !== slot); toast(e && e.toastKey ? t(e.toastKey) : t("fileReadFail", { name: slot.name }), "err"); }
+    renderTray(); updateSend();
+  }
+  input.focus();
 }
 function renderComposerTools(){
   const sb = $("#searchBtn");
@@ -5745,7 +5917,8 @@ function initComposer(){
     const btn = e.currentTarget, models = caps.models || MODEL_DEFAULTS;
     const curM = models.find(m => m.id === cfg.model) || models[0];
     showMenu(btn, [
-      { label: t("attach"), icon: "clip", onClick: () => { $("#fileInput").click(); } },
+      { label: t("attachImage"), icon: "image", onClick: () => { $("#imageBtn").click(); } },
+      { label: t("attachFile"), icon: "clip", onClick: () => { $("#attachBtn").click(); } },
       { label: caps.search ? t("webSearch") : `${t("webSearch")} · ${t("needServer")}`, icon: "globe", on: !!(cfg.search && caps.search), disabled: !caps.search,
         onClick: () => { cfg.search = !cfg.search; saveCfg(); renderComposerTools(); toast(cfg.search ? t("webSearchOn") : t("webSearch")); } },
       { label: t("guruMode"), icon: "cap", on: !!cfg.guru, hint: t("guruHint"), onClick: () => { toggleGuru(); } },
@@ -5769,10 +5942,10 @@ function initComposer(){
     if (files.length){ e.preventDefault(); addFiles(files); }
   });
   $("#composer").addEventListener("submit", e => { e.preventDefault(); if (active) active.ctrl.abort(); else send(); });
-  $("#attachBtn").addEventListener("click", () => { const f = $("#fileInput"); f.accept = canFile("image/jpeg") ? FILE_ACCEPT : TEXT_ACCEPT; f.click(); });
+  $("#attachBtn").addEventListener("click", () => { const f = $("#fileInput"); f.accept = ""; f.click(); });   // Upload Files: any type
   $("#imageBtn").addEventListener("click", () => {
     if (!canFile("image/jpeg")) return toast(t("imgNeedServer"), "err");
-    const f = $("#fileInput"); f.accept = "image/*"; f.click();
+    const f = $("#fileInput"); f.accept = "image/*,video/*"; f.click();   // Upload Media: images and video
   });
   input.addEventListener("focus", () => showSmart());
   input.addEventListener("blur", () => setTimeout(hideSmart, 120));
